@@ -361,6 +361,7 @@ input[type=range] { accent-color: var(--accent); }
     </div>
     <div class="sleep-timer" id="sleep-timer" style="display:none;">00:00:00</div>
     <div class="sleep-since" id="sleep-since"></div>
+    <div id="wake-window-wrap" style="margin-top:8px;display:flex;flex-direction:column;align-items:center;"></div>
     <div style="margin-top:16px;display:flex;gap:10px;" id="sleep-actions">
       <button class="btn btn-primary" onclick="toggleSleep()" id="main-btn">Schlafen starten</button>
     </div>
@@ -369,12 +370,22 @@ input[type=range] { accent-color: var(--accent); }
 
 
   <!-- Voice control -->
-  <div style="display:flex;flex-direction:column;align-items:center;margin:-8px 0 16px">
-    <div class="voice-status">
-      <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Sprachsteuerung">&#x1F3A4;</button>
+  <div style="display:flex;flex-direction:column;align-items:center;margin:-8px 0 16px;width:100%;padding:0 16px">
+    <div class="voice-header">
+      <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Sprachsteuerung">🎤</button>
       <div style="font-size:12px;color:var(--text3)">Sprachsteuerung</div>
+      <button onclick="toggleVoiceHelp()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:4px 8px;border-radius:6px;margin-left:4px" title="Befehle anzeigen">&#x2753;</button>
     </div>
     <div class="voice-feedback" id="voice-feedback"></div>
+    <div class="voice-help" id="voice-help">
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px;text-align:center">Sprachbefehle</div>
+      <div class="voice-help-row"><div class="voice-cmd">"Schlaf start"</div><div class="voice-desc">oder: schlafen, gute Nacht</div></div>
+      <div class="voice-help-row"><div class="voice-cmd">"Schlaf stop"</div><div class="voice-desc">oder: aufgewacht, wach, Ende</div></div>
+      <div class="voice-help-row"><div class="voice-cmd">"150 ml"</div><div class="voice-desc">oder: 150 getrunken, gefüttert 120</div></div>
+      <div class="voice-help-row"><div class="voice-cmd">"Windel nass"</div><div class="voice-desc">oder: gewickelt, nass, pipi</div></div>
+      <div class="voice-help-row"><div class="voice-cmd">"Windel beides"</div><div class="voice-desc">oder: groß, kacka, beides</div></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center">Nur Chrome / Android · Deutsch</div>
+    </div>
   </div>
   <!-- Mood picker -->
   <div id="mood-picker" style="display:none;" class="card">
@@ -416,6 +427,23 @@ input[type=range] { accent-color: var(--accent); }
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
       <div style="font-size:15px;font-weight:500;">Mahlzeit eintragen</div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">Schnellauswahl (ml)</div>
+    <div class="ml-quick">
+      <button class="ml-btn" onclick="setFeedMl(30)">30</button>
+      <button class="ml-btn" onclick="setFeedMl(60)">60</button>
+      <button class="ml-btn" onclick="setFeedMl(80)">80</button>
+      <button class="ml-btn" onclick="setFeedMl(100)">100</button>
+      <button class="ml-btn" onclick="setFeedMl(120)">120</button>
+      <button class="ml-btn" onclick="setFeedMl(130)">130</button>
+      <button class="ml-btn" onclick="setFeedMl(150)">150</button>
+      <button class="ml-btn" onclick="setFeedMl(170)">170</button>
+      <button class="ml-btn" onclick="setFeedMl(180)">180</button>
+      <button class="ml-btn" onclick="setFeedMl(200)">200</button>
+      <button class="ml-btn" onclick="setFeedMl(210)">210</button>
+      <button class="ml-btn" onclick="setFeedMl(230)">230</button>
+      <button class="ml-btn" onclick="setFeedMl(250)">250</button>
+      <button class="ml-btn" onclick="setFeedMl(260)">260</button>
     </div>
     <div class="form-row">
       <div class="form-group" style="margin-bottom:0;">
@@ -655,7 +683,14 @@ input[type=range] { accent-color: var(--accent); }
 
 <!-- PIN Screen -->
 <div id="pin-screen">
-  <div class="pin-title">🌙 BabySchlaf</div>
+  <div class="pin-title">&#x1F319; BabySchlaf</div>
+  <div id="pin-info-box" class="pin-info" style="display:none;">
+    <div class="pin-info-title">Dein persönliches Baby-Tagebuch</div>
+    <div class="pin-info-row"><div class="pin-info-icon">📱</div><div class="pin-info-text"><strong>Lokal &amp; privat</strong> – Alle Daten bleiben auf diesem Gerät. Kein Server, keine Cloud, keine Anmeldung.</div></div>
+    <div class="pin-info-row"><div class="pin-info-icon">💾</div><div class="pin-info-text"><strong>Datensicherung</strong> – Daten können unter Profil → Export als JSON-Datei gesichert werden. Empfohlen: wöchentlich oder nach wichtigen Messungen.</div></div>
+    <div class="pin-info-row"><div class="pin-info-icon">&#x26A0;</div><div class="pin-info-text"><strong>Browser-Daten löschen</strong> löscht auch alle App-Daten. Bitte regelmäßig exportieren!</div></div>
+    <div class="pin-info-row"><div class="pin-info-icon">🎤</div><div class="pin-info-text"><strong>Sprachsteuerung</strong> funktioniert in Chrome &amp; Android mit dem Mikrofon-Button auf der Startseite.</div></div>
+  </div>
   <div class="pin-subtitle" id="pin-subtitle">PIN eingeben</div>
   <div class="pin-dots" id="pin-dots">
     <div class="pin-dot" id="dot-0"></div>
@@ -791,6 +826,7 @@ function updateSleepUI(){
     badge.style.display='none';timer.style.display='none';since.textContent='';
     btn.textContent='Schlafen starten';btn.style.background='var(--accent)';
   }
+  updateWakeWindow();
 }
 
 // FEED
@@ -798,11 +834,16 @@ function logFeed(){
   const ml=parseInt(document.getElementById('feed-ml').value)||0,type=document.getElementById('feed-type').value;
   if(ml<=0){showToast('\u26a0\ufe0f Bitte Menge eingeben');return}
   state.feedLogs.unshift({id:Date.now(),ts:Date.now(),ml,type});save('feedLogs');
-  document.getElementById('feed-ml').value='';
+  document.getElementById('feed-ml').value='';document.querySelectorAll('.ml-btn').forEach(b=>b.classList.remove('selected'));
   updateHomeStats();updateRecentLog();updateSinceFeed();
   showToast('\u{1F37C} '+ml+' ml eingetragen');
 }
 
+
+function setFeedMl(v){
+  document.getElementById('feed-ml').value=v;
+  document.querySelectorAll('.ml-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.textContent)===v));
+}
 // DIAPER
 function logDiaper(type){
   state.diaperLogs.unshift({id:Date.now(),ts:Date.now(),type});save('diaperLogs');
@@ -882,6 +923,10 @@ function initVoice(){
   r.onerror=err=>{setVoiceActive(false);setVoiceFeedback('Fehler: '+err.error)};
   return r;
 }
+function toggleVoiceHelp(){
+  const el=document.getElementById('voice-help');
+  if(el)el.classList.toggle('show');
+}
 function toggleVoice(){
   if(!recognition)recognition=initVoice();
   if(!recognition)return;
@@ -894,39 +939,74 @@ function setVoiceFeedback(msg){const el=document.getElementById('voice-feedback'
 
 function processVoice(texts){
   const text=texts[0];
-  // Extract ml (numbers, also words)
+  function feedback(msg){setVoiceFeedback(msg);showToast(msg)}
+
   function extractMl(t){
-    const wordMap={'zehn':10,'zwanzig':20,'dreissig':30,'vierzig':40,'funfzig':50,'sechzig':60,'siebzig':70,'achtzig':80,'neunzig':90,'hundert':100,'hundertzehn':110,'hundertzwanzig':120,'hundertdreissig':130,'hundertfunfzig':150,'hundertsechzig':160,'hundertsiezig':170,'hundertachtzig':180,'hunderneunzig':190,'zweihundert':200};
-    for(const[w,v]of Object.entries(wordMap)){if(t.includes(w))return v}
-    const m=t.match(/(\d+)/);return m?parseInt(m[1]):null;
+    // normalize umlauts and lowercase
+    const n=t.replace(/ä/g,'ae').replace(/ü/g,'ue').replace(/ö/g,'oe').replace(/ß/g,'ss').toLowerCase();
+    // digits first (most reliable)
+    const dm=n.match(/(\d{2,3})/);if(dm){const v=parseInt(dm[1]);if(v>=10&&v<=500)return v}
+    // German number words - sorted longest first to avoid partial matches
+    const nums={
+      // 3-digit compounds
+      'dreihundert':300,'zweihundertneunzig':290,'zweihundertachtzig':280,
+      'zweihundertsiebzig':270,'zweihundertsechzig':260,'zweihundertfunfzig':250,
+      'zweihundert':200,'hundertneunzig':190,'hundertachtzig':180,
+      'hundertsiebzig':170,'hundertsechzig':160,'hundertfunfzig':150,
+      'hundertfunf':105,'hundertvierzig':140,'hundertdreissig':130,
+      'hundertzwanzig':120,'hundertzehn':110,'hundert':100,'einhundert':100,
+      // tens
+      'dreissig':30,'vierzig':40,'funfzig':50,'sechzig':60,
+      'siebzig':70,'achtzig':80,'neunzig':90,'zwanzig':20,'zehn':10,
+      // common combos said aloud
+      'hundert dreissig':130,'hundert vierzig':140,'hundert funfzig':150,
+      'hundert sechzig':160,'hundert siebzig':170,'hundert achtzig':180,
+      'hundert neunzig':190,'zwei hundert':200,'ein hundert':100,
+      'hundert zwanzig':120,'hundert zehn':110,
+    };
+    const keys=Object.keys(nums).sort((a,b)=>b.length-a.length);
+    for(const k of keys){if(n.includes(k))return nums[k]}
+    // single digit fallback
+    const sm=n.match(/(\d+)/);return sm?parseInt(sm[1]):null;
   }
-  // Sleep start
-  if(text.includes('schlaf')&&(text.includes('start')||text.includes('an')||text.includes('beginnen')||text.includes('starten'))){
-    if(!state.activeSleep){startSleep();setVoiceFeedback('\u2705 Schlaf gestartet');return}
-    else{setVoiceFeedback('\u{1F634} Schl\u00e4ft schon');return}
+
+  // SCHLAF START
+  if(/schlaf.*(start|an|begin|legen)|^schlafen$|gute nacht|einschlafen/i.test(text)){
+    if(!state.activeSleep){startSleep();feedback('\u2705 Schlaf gestartet');return}
+    else{feedback('\uD83D\uDE34 Schläft schon');return}
   }
-  // Sleep stop
-  if(text.includes('schlaf')&&(text.includes('stop')||text.includes('auf')||text.includes('ende')||text.includes('beenden'))){
-    if(state.activeSleep){stopSleep();setVoiceFeedback('\u2705 Schlaf beendet');return}
-    else{setVoiceFeedback('\u26a0\ufe0f Kein aktiver Schlaf');return}
+  // SCHLAF STOP
+  if(/schlaf.*(stop|aus|end|auf|fertig)|^aufgewacht$|^wach$|baby wach|aufwachen/i.test(text)){
+    if(state.activeSleep){stopSleep();feedback('\u2705 Schlaf beendet');return}
+    else{feedback('\u26A0\uFE0F Kein aktiver Schlaf');return}
   }
-  // Feed
-  if(text.includes('getrunken')||text.includes('trinken')||text.includes('gefuttert')||text.includes('milliliter')||text.includes(' ml')){
+  // FÜTTERN
+  if(/getrunken|trinken|gefüttert|gefuttert|milliliter|flasche|muttermilch|beikost|\d+\s*ml|\bml\b/i.test(text)){
     const ml=extractMl(text);
-    if(ml&&ml>0&&ml<=600){
-      const type=text.includes('muttermilch')?'Muttermilch':text.includes('flasche')?'Flasche':text.includes('beikost')?'Beikost':'Muttermilch';
+    if(ml&&ml>=10&&ml<=600){
+      const type=/muttermilch|brust|stillen/i.test(text)?'Muttermilch':/beikost|brei|essen/i.test(text)?'Beikost':'Flasche';
       state.feedLogs.unshift({id:Date.now(),ts:Date.now(),ml,type});save('feedLogs');
       updateHomeStats();updateRecentLog();updateSinceFeed();
-      setVoiceFeedback('\u2705 '+ml+' ml eingetragen');return;
-    }else{setVoiceFeedback('\u26a0\ufe0f Menge nicht erkannt: '+text);return}
+      feedback('\u2705 '+ml+' ml '+type+' eingetragen');return;
+    }
+    feedback('\u26A0\uFE0F Menge nicht erkannt – z.B. "150 ml getrunken"');return;
   }
-  // Diaper
-  if(text.includes('windel')||text.includes('wickeln')){
-    if(text.includes('beides')||text.includes('gross')||text.includes('gro\u00df')||text.includes('kacka')){logDiaper('both');setVoiceFeedback('\u2705 Windel (beides) eingetragen');return}
-    logDiaper('wet');setVoiceFeedback('\u2705 Nasse Windel eingetragen');return;
+  // WINDEL
+  if(/windel|wickeln|gewickelt|pipi|kacka|kaka|groß|gross|beides/i.test(text)){
+    const both=/beides|kacka|kaka|groß|gross|stuhl/i.test(text);
+    logDiaper(both?'both':'wet');
+    feedback(both?'\u2705 Windel (beides) eingetragen':'\u2705 Nasse Windel eingetragen');return;
   }
-  setVoiceFeedback('Nicht erkannt: \u201e'+text+'\u201c');
+  // HILFE
+  if(/hilfe|help|befehle|was kann|was sag/i.test(text)){
+    const h=document.getElementById('voice-help');if(h)h.classList.add('show');
+    feedback('\uD83D\uDCCB Befehle eingeblendet');return;
+  }
+  // Fallback: try alternatives
+  if(texts.length>1){processVoice(texts.slice(1));return}
+  setVoiceFeedback('\u2753 Nicht erkannt: \u201E'+text+'\u201C');
 }
+
 
 // STATS
 let sleepChart=null,feedChart=null;
@@ -985,6 +1065,47 @@ function renderFeedChart(){
 const RS=[[0,2,16,18,6,8],[2,4,15,17,5,7],[4,8,14,16,4,6],[8,13,13,15,3,5],[13,26,12,15,2,4],[26,39,12,14,2,3],[39,52,11,14,1,2]];
 const RF=[[0,2,400,600,8,12,'Alle 2\u20133h, nach Bedarf'],[2,4,500,700,7,10,'Ca. 60\u201390ml'],[4,8,600,800,6,8,'Ca. 150ml/kg/Tag'],[8,13,700,900,5,7,'L\u00e4ngere Abst\u00e4nde m\u00f6glich'],[13,26,750,950,4,6,'Beikost ab ca. 4. Monat m\u00f6glich'],[26,39,600,900,3,5,'Beikost erg\u00e4nzt Milch'],[39,52,500,800,3,4,'Beikost 3x t\u00e4glich']];
 const RM=[{von:0,bis:4,text:'Erkennt Gesichter, folgt Objekten mit den Augen'},{von:0,bis:4,text:'Reagiert auf Stimmen, besonders die der Eltern'},{von:4,bis:8,text:'Erstes soziales L\u00e4cheln \u2013 ein Meilenstein!'},{von:4,bis:8,text:'Hebt den Kopf in Bauchlage f\u00fcr kurze Zeit'},{von:8,bis:16,text:'Greift nach Objekten, lacht laut'},{von:8,bis:16,text:'Schlafregression m\u00f6glich (~3./4. Monat)'},{von:16,bis:26,text:'Dreht sich, zeigt Interesse an fester Nahrung'},{von:26,bis:39,text:'Setzt sich auf, beginnt zu robben'},{von:39,bis:52,text:'Krabbelt, zieht sich hoch, Trennungsangst beginnt'}];
+// WAKE WINDOWS
+const WW=[
+  [0,4,45,60,'4–6'],[4,8,60,90,'4–5'],[8,12,75,120,'4'],
+  [12,18,90,120,'3–4'],[18,26,120,150,'3'],[26,35,150,180,'2–3'],
+  [35,52,150,210,'2'],[52,78,180,240,'1–2'],
+];
+function getWW(weeks){return WW.find(r=>weeks>=r[0]&&weeks<r[1])||WW[WW.length-1]}
+
+function updateWakeWindow(){
+  const wrap=document.getElementById('wake-window-wrap');
+  if(!wrap||state.activeSleep){if(wrap)wrap.innerHTML='';return}
+  const lastSleep=state.sleepSessions[0];
+  if(!lastSleep){wrap.innerHTML='';return}
+  const wakeMins=Math.floor((Date.now()-lastSleep.end)/60000);
+  const weeks=getAgeWeeks();
+  if(weeks===null){
+    const h=Math.floor(wakeMins/60),m=wakeMins%60;
+    wrap.innerHTML='<div class="ww-pill ww-idle">⏱ Wach seit '+(h>0?h+'h '+m+'min':m+' min')+'</div>';
+    return;
+  }
+  const ww=getWW(weeks),minM=ww[2],maxM=ww[3];
+  const pct=Math.min(100,Math.round(wakeMins/maxM*100));
+  let cls,label,barCls;
+  if(wakeMins<minM*0.8){cls='ww-idle';barCls='idle';label='Noch zu früh'}
+  else if(wakeMins<=maxM){cls='ww-ok';barCls='ok';label='Gutes Schlaffenster'}
+  else if(wakeMins<=maxM*1.2){cls='ww-warn';barCls='warn';label='Übermüdet?'}
+  else{cls='ww-over';barCls='over';label='Zu lange wach!'}
+  const h=Math.floor(wakeMins/60),m=wakeMins%60;
+  const wachTxt=h>0?h+'h '+m+'min':m+' min';
+  const remM=maxM-wakeMins;
+  const remTxt=remM>0?(Math.floor(remM/60)>0?Math.floor(remM/60)+'h '+remM%60+'min':remM+'min')+' übrig':'jetzt einschlafen';
+  wrap.innerHTML=
+    '<div class="ww-pill '+cls+'">☀ Wach seit '+wachTxt+' – '+label+'</div>'+
+    '<div class="ww-bar-wrap">'+
+      '<div class="ww-bar-track"><div class="ww-bar-fill '+barCls+'" style="width:'+pct+'%"></div></div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:3px">'+
+        '<span>'+minM+'min</span><span>'+remTxt+'</span><span>'+maxM+'min</span>'+
+      '</div>'+
+    '</div>';
+}
+
 const RR=[4,8,17,26,37,46];
 function gRef(arr,w){return arr.find(r=>w>=r[0]&&w<r[1])||arr[arr.length-1]}
 function scColor(v,mn,mx){if(v===null)return'blue';if(v<mn*0.85||v>mx*1.15)return'red';if(v<mn||v>mx)return'amber';return'green'}
@@ -1024,6 +1145,19 @@ function renderInsights(){
   }
   if(ms.length){html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">Entwicklung jetzt</div>';html+=ms.map(m=>'<div class="milestone"><div class="milestone-dot"></div><div class="milestone-text">'+m.text+'</div></div>').join('')}
   if(up.length){html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text3)">Als n\u00e4chstes (8 Wochen)</div>';html+=up.map(m=>'<div class="milestone"><div class="milestone-dot upcoming"></div><div class="milestone-text" style="color:var(--text3)">'+m.text+'</div></div>').join('')}
+  if(weeks!==null){
+    const ww=getWW(weeks);
+    html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">Wake Windows</div>';
+    html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">&#x23F0;</div><div class="rec-title">Empfohlenes Wake Window</div></div>'
+      +'<div class="rec-text">Mit '+weeks+' Wochen: <strong>'+ww[2]+'–'+ww[3]+' Minuten</strong> wach, dann schlafen legen.</div>'
+      +'<div class="rec-text" style="margin-top:6px">Typisch <strong>'+ww[4]+' Schläfchen</strong> am Tag.</div>'
+      +'<div class="rec-sub">Wake Windows sind Richtwerte – manche Babys brauchen mehr oder weniger.</div></div>';
+    html+='<div class="rec-card"><div style="font-size:13px;font-weight:500;margin-bottom:10px">Tabelle nach Alter</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 8px;font-size:12px;">'
+      +'<div style="font-weight:500;color:var(--text2)">Alter</div><div style="font-weight:500;color:var(--text2)">Wake Window</div><div style="font-weight:500;color:var(--text2)">Schläfchen</div>'
+      +WW.map(r=>{const cur=weeks>=r[0]&&weeks<r[1];const col=cur?'var(--accent2)':'var(--text3)';const valcol=cur?'var(--text)':'var(--text3)';return'<div style="color:'+col+'">'+r[0]+'–'+r[1]+' Wo</div><div style="color:'+valcol+'">'+r[2]+'–'+r[3]+'min</div><div style="color:'+valcol+'">'+r[4]+'</div>'}).join('')
+      +'</div></div>';
+  }
   html+='<div class="disclaimer">&#x2695;&#xFE0F; Alle Angaben sind <strong>Orientierungswerte</strong> (WHO, AAP). Jedes Baby entwickelt sich individuell. Bei Fragen immer den <strong>Kinderarzt</strong> hinzuziehen.</div>';
   el.innerHTML=html;
 }
@@ -1143,8 +1277,9 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){window._bt
 // INIT
 function initApp(){
   document.getElementById('growth-date').value=new Date().toISOString().slice(0,10);
-  updateGreeting();updateSleepUI();updateHomeStats();updateRecentLog();updateSinceFeed();
-  setInterval(()=>{updateHomeStats();updateGreeting();updateSinceFeed()},60000);
+  updateGreeting();updateSleepUI();updateHomeStats();updateRecentLog();updateSinceFeed();updateWakeWindow();
+  setInterval(()=>{updateHomeStats();updateGreeting();updateSinceFeed();updateWakeWindow()},60000);
+  setInterval(updateWakeWindow,30000);
 }
 initPin();
 </script>
