@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BabySchlaf">
+<meta name="theme-color" content="#1a1a2e">
+<title>BabySchlaf</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0f0f1a;
+  --bg2: #1a1a2e;
+  --bg3: #22223a;
+  --card: #1e1e32;
+  --border: rgba(255,255,255,0.08);
+  --text: #f0f0ff;
+  --text2: rgba(240,240,255,0.55);
+  --text3: rgba(240,240,255,0.3);
+  --accent: #7c6af7;
+  --accent2: #a78bfa;
+  --teal: #2dd4bf;
+  --amber: #fbbf24;
+  --rose: #fb7185;
+  --green: #34d399;
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 100px;
+}
+.serif { font-family: 'DM Serif Display', serif; }
+
+/* Nav */
+.nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex; z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 12px 8px; cursor: pointer;
+  background: none; border: none; color: var(--text3);
+  font-family: 'DM Sans', sans-serif; font-size: 11px;
+  transition: color 0.2s;
+}
+.nav-btn.active { color: var(--accent2); }
+.nav-icon { font-size: 22px; line-height: 1; }
+
+/* Pages */
+.page { display: none; padding: 20px 16px; }
+.page.active { display: block; }
+
+/* Header */
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 28px; font-weight: 300; letter-spacing: -0.5px; }
+.page-header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 12px;
+}
+.card-sm { padding: 14px; }
+
+/* Sleep button */
+.sleep-center { display: flex; flex-direction: column; align-items: center; padding: 32px 0; }
+.sleep-ring {
+  width: 180px; height: 180px; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer; position: relative;
+  background: var(--card);
+  border: 2px solid var(--border);
+  transition: all 0.3s ease;
+  user-select: none;
+}
+.sleep-ring.sleeping {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 8px rgba(124,106,247,0.1), 0 0 0 16px rgba(124,106,247,0.05);
+  animation: pulse-ring 3s ease-in-out infinite;
+}
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 8px rgba(124,106,247,0.12), 0 0 0 20px rgba(124,106,247,0.04); }
+  50% { box-shadow: 0 0 0 12px rgba(124,106,247,0.18), 0 0 0 28px rgba(124,106,247,0.06); }
+}
+.sleep-emoji { font-size: 52px; line-height: 1; margin-bottom: 6px; }
+.sleep-label { font-size: 15px; font-weight: 500; color: var(--text2); }
+.sleep-timer {
+  font-size: 42px; font-weight: 300; letter-spacing: 4px;
+  color: var(--accent2); margin: 20px 0 8px; font-variant-numeric: tabular-nums;
+}
+.sleep-since { font-size: 13px; color: var(--text3); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 50px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+  cursor: pointer; border: none; transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:active { transform: scale(0.97); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:active { transform: scale(0.97); background: var(--bg3); }
+.btn-danger { background: transparent; border: 1px solid var(--rose); color: var(--rose); }
+
+/* Stats grid */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+}
+.stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.stat-value { font-size: 22px; font-weight: 500; }
+.stat-value.accent { color: var(--accent2); }
+.stat-value.teal { color: var(--teal); }
+.stat-value.amber { color: var(--amber); }
+.stat-value.green { color: var(--green); }
+
+/* Session list */
+.session-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.session-item:last-child { border-bottom: none; }
+.session-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0;
+}
+.session-dot.feed { background: var(--teal); }
+.session-info { flex: 1; }
+.session-title { font-size: 14px; font-weight: 500; }
+.session-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.session-dur { font-size: 14px; font-weight: 500; color: var(--text2); }
+.delete-btn {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  padding: 4px; font-size: 16px; border-radius: 6px;
+  transition: color 0.2s;
+}
+.delete-btn:hover { color: var(--rose); }
+
+/* Form */
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; color: var(--text2); margin-bottom: 8px; display: block; }
+.form-input {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+  transition: border-color 0.2s;
+}
+.form-input:focus { outline: none; border-color: var(--accent); }
+.form-select {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+  appearance: none;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Chart container */
+.chart-wrap { position: relative; height: 200px; margin: 8px 0; }
+
+/* Tabs */
+.tabs { display: flex; background: var(--bg3); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 20px; }
+.tab {
+  flex: 1; text-align: center; padding: 9px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text3);
+  transition: all 0.2s; background: none; border: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.tab.active { background: var(--card); color: var(--text); }
+
+/* Badge */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+}
+.badge-accent { background: rgba(124,106,247,0.2); color: var(--accent2); }
+.badge-teal { background: rgba(45,212,191,0.2); color: var(--teal); }
+.badge-amber { background: rgba(251,191,36,0.2); color: var(--amber); }
+
+/* Profile */
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 16px;
+}
+
+/* WHO percentile */
+.percentile-bar {
+  height: 8px; background: var(--bg3); border-radius: 4px;
+  overflow: hidden; margin: 8px 0;
+}
+.percentile-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--teal), var(--accent));
+  transition: width 0.5s ease;
+}
+
+/* Insights */
+.insight {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px; background: var(--bg3); border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+.insight-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.insight-text { font-size: 14px; line-height: 1.5; color: var(--text2); }
+.insight-text strong { color: var(--text); }
+
+/* Empty state */
+.empty { text-align: center; padding: 40px 20px; color: var(--text3); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty p { font-size: 14px; }
+
+/* Divider */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+/* Toggle row */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+.toggle-row label { font-size: 15px; }
+input[type=range] { accent-color: var(--accent); }
+
+/* Notification */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
+  background: var(--card); border: 1px solid var(--border); border-radius: 50px;
+  padding: 10px 20px; font-size: 14px; font-weight: 500;
+  transition: transform 0.3s ease; z-index: 200; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Loading */
+.spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* PIN Screen */
+#pin-screen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 1000; padding: 32px;
+}
+#pin-screen.hidden { display: none; }
+.pin-title { font-family: 'DM Serif Display', serif; font-size: 32px; margin-bottom: 8px; text-align: center; }
+.pin-subtitle { font-size: 14px; color: var(--text3); margin-bottom: 40px; text-align: center; }
+.pin-dots { display: flex; gap: 16px; margin-bottom: 40px; }
+.pin-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--text3); background: transparent;
+  transition: all 0.2s;
+}
+.pin-dot.filled { background: var(--accent2); border-color: var(--accent2); }
+.pin-dot.error { background: var(--rose); border-color: var(--rose); animation: shake 0.4s ease; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.pin-grid {
+  display: grid; grid-template-columns: repeat(3, 72px);
+  gap: 12px;
+}
+.pin-key {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); font-size: 22px; font-weight: 400;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; user-select: none;
+}
+.pin-key:active { transform: scale(0.92); background: var(--bg3); }
+.pin-key.del { font-size: 18px; color: var(--text2); }
+.pin-key.empty { background: transparent; border-color: transparent; pointer-events: none; }
+.pin-error-msg { font-size: 13px; color: var(--rose); margin-top: 20px; min-height: 20px; }
+.pin-setup-note { font-size: 12px; color: var(--text3); margin-top: 16px; text-align: center; max-width: 260px; line-height: 1.6; }
+.pin-change-link { font-size: 13px; color: var(--accent2); cursor: pointer; margin-top: 24px; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- PAGE: Home -->
+<div class="page active" id="page-home">
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <h1 class="serif" id="home-greeting">Guten Abend</h1>
+      <p id="home-babyname">Lade...</p>
+    </div>
+    <div id="home-date" style="font-size:13px;color:var(--text3);text-align:right;margin-top:6px;"></div>
+  </div>
+
+  <!-- Sleep button -->
+  <div class="sleep-center">
+    <div class="sleep-ring" id="sleep-ring" onclick="toggleSleep()">
+      <div class="sleep-emoji" id="sleep-emoji">🌙</div>
+      <div class="sleep-label" id="sleep-label">Schläft nicht</div>
+    </div>
+    <div class="sleep-timer" id="sleep-timer" style="display:none;">00:00:00</div>
+    <div class="sleep-since" id="sleep-since"></div>
+    <div style="margin-top:16px;display:flex;gap:10px;" id="sleep-actions">
+      <button class="btn btn-primary" onclick="toggleSleep()" id="main-btn">Schlafen starten</button>
+    </div>
+  </div>
+
+  <!-- Today stats -->
+  <div class="card">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Heute</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Schlaf gesamt</div>
+        <div class="stat-value accent" id="today-sleep">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Schlafphasen</div>
+        <div class="stat-value teal" id="today-phases">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Mahlzeiten</div>
+        <div class="stat-value amber" id="today-feeds">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Getrunken</div>
+        <div class="stat-value green" id="today-ml">— ml</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick feed log -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:15px;font-weight:500;">Mahlzeit eintragen</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Menge (ml)</label>
+        <input class="form-input" type="number" id="feed-ml" placeholder="120" min="0" max="500">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Art</label>
+        <select class="form-select" id="feed-type">
+          <option value="Muttermilch">Muttermilch</option>
+          <option value="Flasche">Flasche</option>
+          <option value="Beikost">Beikost</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:12px;justify-content:center;" onclick="logFeed()">Eintragen</button>
+  </div>
+
+  <!-- Recent log -->
+  <div class="card">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Letzte Einträge</div>
+    <div id="recent-log">
+      <div class="empty"><div class="empty-icon">📋</div><p>Noch keine Einträge heute</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: Statistiken -->
+<div class="page" id="page-stats">
+  <div class="page-header">
+    <h1 class="serif">Auswertung</h1>
+    <p>Schlaf & Ernährung im Überblick</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchStatTab('sleep')">Schlaf</button>
+    <button class="tab" onclick="switchStatTab('feed')">Ernährung</button>
+    <button class="tab" onclick="switchStatTab('insights')">Prognosen</button>
+  </div>
+
+  <!-- Sleep tab -->
+  <div id="stat-sleep">
+    <div class="stats-grid" style="margin-bottom:16px;">
+      <div class="stat-card">
+        <div class="stat-label">Ø Schlaf / Tag</div>
+        <div class="stat-value accent" id="avg-sleep-day">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Längste Phase</div>
+        <div class="stat-value teal" id="longest-phase">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Phasen / Tag</div>
+        <div class="stat-value amber" id="avg-phases">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Erfasste Tage</div>
+        <div class="stat-value green" id="total-days">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">Schlaf letzte 7 Tage (Stunden)</div>
+      <div class="chart-wrap"><canvas id="chart-sleep"></canvas></div>
+    </div>
+    <div class="card" id="sleep-history">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Alle Schlafphasen</div>
+      <div id="sleep-list"></div>
+    </div>
+  </div>
+
+  <!-- Feed tab -->
+  <div id="stat-feed" style="display:none;">
+    <div class="stats-grid" style="margin-bottom:16px;">
+      <div class="stat-card">
+        <div class="stat-label">Ø ml / Tag</div>
+        <div class="stat-value accent" id="avg-ml-day">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Mahlzeiten / Tag</div>
+        <div class="stat-value teal" id="avg-feeds-day">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">Trinkmenge letzte 7 Tage (ml)</div>
+      <div class="chart-wrap"><canvas id="chart-feed"></canvas></div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Letzte Mahlzeiten</div>
+      <div id="feed-list"></div>
+    </div>
+  </div>
+
+  <!-- Insights tab -->
+  <div id="stat-insights" style="display:none;">
+    <div id="insights-content"></div>
+  </div>
+</div>
+
+<!-- PAGE: Wachstum -->
+<div class="page" id="page-growth">
+  <div class="page-header">
+    <h1 class="serif">Wachstum</h1>
+    <p>Gewicht & Größe verfolgen</p>
+  </div>
+
+  <!-- Add measurement -->
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:16px;">Neue Messung</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Datum</label>
+        <input class="form-input" type="date" id="growth-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Gewicht (g)</label>
+        <input class="form-input" type="number" id="growth-weight" placeholder="3500">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Größe (cm)</label>
+        <input class="form-input" type="number" id="growth-height" placeholder="50">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kopfumfang (cm)</label>
+        <input class="form-input" type="number" id="growth-head" placeholder="34">
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveGrowth()">Speichern</button>
+  </div>
+
+  <!-- Growth chart -->
+  <div class="card">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Gewichtsverlauf (g)</div>
+    <div class="chart-wrap"><canvas id="chart-weight"></canvas></div>
+  </div>
+
+  <!-- WHO percentile -->
+  <div class="card" id="who-card">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">WHO-Perzentile (aktuell)</div>
+    <div id="who-content">
+      <div class="empty"><div class="empty-icon">📏</div><p>Noch keine Messungen</p></div>
+    </div>
+  </div>
+
+  <!-- Growth history -->
+  <div class="card">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Messungen</div>
+    <div id="growth-list">
+      <div class="empty"><div class="empty-icon">📊</div><p>Noch keine Messungen eingetragen</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: Profil -->
+<div class="page" id="page-profile">
+  <div class="page-header">
+    <h1 class="serif">Babyprofil</h1>
+    <p>Angaben zu eurem Baby</p>
+  </div>
+
+  <div style="text-align:center;margin-bottom:24px;">
+    <div class="profile-avatar">👶</div>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label class="form-label">Name des Babys</label>
+      <input class="form-input" type="text" id="profile-name" placeholder="z.B. Emma">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Geburtsdatum</label>
+      <input class="form-input" type="date" id="profile-birthday">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Geburtsgewicht (g)</label>
+        <input class="form-input" type="number" id="profile-birthweight" placeholder="3500">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Geburtsgröße (cm)</label>
+        <input class="form-input" type="number" id="profile-birthheight" placeholder="50">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Geschlecht</label>
+      <select class="form-select" id="profile-gender">
+        <option value="">Bitte wählen</option>
+        <option value="m">Männlich</option>
+        <option value="f">Weiblich</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveProfile()">Profil speichern</button>
+  </div>
+
+  <div class="card" id="age-card" style="display:none;">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Alter</div>
+    <div id="age-display"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:4px;">PIN ändern</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;">Neuen 4-stelligen PIN festlegen</div>
+    <button class="btn btn-outline" onclick="startPinChange()">PIN ändern</button>
+  </div>
+
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:4px;">Daten exportieren</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;">Alle Daten als JSON-Datei herunterladen</div>
+    <button class="btn btn-outline" onclick="exportData()">Export herunterladen</button>
+  </div>
+
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;color:var(--rose);margin-bottom:4px;">Alle Daten löschen</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;">Setzt die App vollständig zurück</div>
+    <button class="btn btn-danger" onclick="confirmReset()">Zurücksetzen</button>
+  </div>
+</div>
+
+<!-- PIN Screen -->
+<div id="pin-screen">
+  <div class="pin-title">🌙 BabySchlaf</div>
+  <div class="pin-subtitle" id="pin-subtitle">PIN eingeben</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="dot-0"></div>
+    <div class="pin-dot" id="dot-1"></div>
+    <div class="pin-dot" id="dot-2"></div>
+    <div class="pin-dot" id="dot-3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-key" onclick="pinKey('1')">1</button>
+    <button class="pin-key" onclick="pinKey('2')">2</button>
+    <button class="pin-key" onclick="pinKey('3')">3</button>
+    <button class="pin-key" onclick="pinKey('4')">4</button>
+    <button class="pin-key" onclick="pinKey('5')">5</button>
+    <button class="pin-key" onclick="pinKey('6')">6</button>
+    <button class="pin-key" onclick="pinKey('7')">7</button>
+    <button class="pin-key" onclick="pinKey('8')">8</button>
+    <button class="pin-key" onclick="pinKey('9')">9</button>
+    <button class="pin-key empty"></button>
+    <button class="pin-key" onclick="pinKey('0')">0</button>
+    <button class="pin-key del" onclick="pinDelete()">⌫</button>
+  </div>
+  <div class="pin-error-msg" id="pin-error"></div>
+  <div class="pin-setup-note" id="pin-setup-note" style="display:none;">
+    Beim ersten Start einen 4-stelligen PIN wählen.<br>Diesen PIN gut merken!
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('home',this)">
+    <span class="nav-icon">🏠</span>Home
+  </button>
+  <button class="nav-btn" onclick="showPage('stats',this)">
+    <span class="nav-icon">📊</span>Statistik
+  </button>
+  <button class="nav-btn" onclick="showPage('growth',this)">
+    <span class="nav-icon">📏</span>Wachstum
+  </button>
+  <button class="nav-btn" onclick="showPage('profile',this)">
+    <span class="nav-icon">👶</span>Profil
+  </button>
+</nav>
+
+<script>
+// ===================== DATA LAYER =====================
+const DB = {
+  get: (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+
+let state = {
+  profile: DB.get('profile', {}),
+  sleepSessions: DB.get('sleepSessions', []),
+  feedLogs: DB.get('feedLogs', []),
+  growthLogs: DB.get('growthLogs', []),
+  activeSleep: DB.get('activeSleep', null)
+};
+
+function save(key) { DB.set(key, state[key]); }
+
+// ===================== UTILS =====================
+function fmt(ms) {
+  const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60);
+  if (h > 0) return `${h}h ${m % 60}min`;
+  return `${m}min`;
+}
+function fmtTimer(ms) {
+  const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60);
+  return `${String(h).padStart(2,'0')}:${String(m%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString('de-DE', {weekday:'short',day:'numeric',month:'short'});
+}
+function fmtTime(ts) {
+  return new Date(ts).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+}
+function todayStart() { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+function dayStart(date) { const d = new Date(date); d.setHours(0,0,0,0); return d.getTime(); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function getAgeWeeks(birthday) {
+  return Math.floor((Date.now() - birthday) / (7 * 24 * 3600000));
+}
+
+// ===================== NAV =====================
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'stats') renderStats();
+  if (name === 'growth') renderGrowth();
+  if (name === 'profile') renderProfile();
+}
+
+// ===================== SLEEP =====================
+let timerInterval = null;
+
+function toggleSleep() {
+  if (state.activeSleep) {
+    stopSleep();
+  } else {
+    startSleep();
+  }
+}
+
+function startSleep() {
+  state.activeSleep = { start: Date.now() };
+  save('activeSleep');
+  updateSleepUI();
+  showToast('😴 Schlaf gestartet');
+}
+
+function stopSleep() {
+  if (!state.activeSleep) return;
+  const session = {
+    id: Date.now(),
+    start: state.activeSleep.start,
+    end: Date.now(),
+    duration: Date.now() - state.activeSleep.start
+  };
+  state.sleepSessions.unshift(session);
+  state.activeSleep = null;
+  save('sleepSessions'); save('activeSleep');
+  updateSleepUI();
+  updateHomeStats();
+  updateRecentLog();
+  showToast('✅ Schlaf beendet – ' + fmt(session.duration));
+}
+
+function updateSleepUI() {
+  const ring = document.getElementById('sleep-ring');
+  const emoji = document.getElementById('sleep-emoji');
+  const label = document.getElementById('sleep-label');
+  const timer = document.getElementById('sleep-timer');
+  const since = document.getElementById('sleep-since');
+  const btn = document.getElementById('main-btn');
+
+  clearInterval(timerInterval);
+
+  if (state.activeSleep) {
+    ring.classList.add('sleeping');
+    emoji.textContent = '😴';
+    label.textContent = 'Schläft';
+    timer.style.display = 'block';
+    since.textContent = 'Eingeschlafen um ' + fmtTime(state.activeSleep.start);
+    btn.textContent = 'Aufwachen';
+    btn.style.background = 'var(--rose)';
+    timerInterval = setInterval(() => {
+      timer.textContent = fmtTimer(Date.now() - state.activeSleep.start);
+    }, 1000);
+    timer.textContent = fmtTimer(Date.now() - state.activeSleep.start);
+  } else {
+    ring.classList.remove('sleeping');
+    emoji.textContent = '🌙';
+    label.textContent = 'Wach';
+    timer.style.display = 'none';
+    since.textContent = '';
+    btn.textContent = 'Schlafen starten';
+    btn.style.background = 'var(--accent)';
+  }
+}
+
+// ===================== FEED =====================
+function logFeed() {
+  const ml = parseInt(document.getElementById('feed-ml').value) || 0;
+  const type = document.getElementById('feed-type').value;
+  if (ml <= 0) { showToast('⚠️ Bitte Menge eingeben'); return; }
+  const entry = { id: Date.now(), ts: Date.now(), ml, type };
+  state.feedLogs.unshift(entry);
+  save('feedLogs');
+  document.getElementById('feed-ml').value = '';
+  updateHomeStats();
+  updateRecentLog();
+  showToast('🍼 ' + ml + ' ml eingetragen');
+}
+
+// ===================== HOME STATS =====================
+function updateHomeStats() {
+  const ts = todayStart();
+  const todaySleep = state.sleepSessions.filter(s => s.start >= ts);
+  const totalSleepMs = todaySleep.reduce((sum, s) => sum + s.duration, 0);
+  const activeMs = state.activeSleep ? Date.now() - state.activeSleep.start : 0;
+  document.getElementById('today-sleep').textContent = totalSleepMs + activeMs > 0 ? fmt(totalSleepMs + activeMs) : '—';
+  document.getElementById('today-phases').textContent = todaySleep.length + (state.activeSleep ? 1 : 0);
+
+  const todayFeeds = state.feedLogs.filter(f => f.ts >= ts);
+  document.getElementById('today-feeds').textContent = todayFeeds.length;
+  const totalMl = todayFeeds.reduce((sum, f) => sum + f.ml, 0);
+  document.getElementById('today-ml').textContent = totalMl > 0 ? totalMl + ' ml' : '— ml';
+}
+
+function updateRecentLog() {
+  const ts = todayStart();
+  const sleepToday = state.sleepSessions.filter(s => s.start >= ts);
+  const feedToday = state.feedLogs.filter(f => f.ts >= ts);
+  const all = [
+    ...sleepToday.map(s => ({ ts: s.end, type: 'sleep', data: s })),
+    ...feedToday.map(f => ({ ts: f.ts, type: 'feed', data: f }))
+  ].sort((a, b) => b.ts - a.ts).slice(0, 8);
+
+  const el = document.getElementById('recent-log');
+  if (all.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>Noch keine Einträge heute</p></div>';
+    return;
+  }
+  el.innerHTML = all.map(item => {
+    if (item.type === 'sleep') {
+      return `<div class="session-item">
+        <div class="session-dot"></div>
+        <div class="session-info">
+          <div class="session-title">Schlaf</div>
+          <div class="session-sub">${fmtTime(item.data.start)} – ${fmtTime(item.data.end)}</div>
+        </div>
+        <div class="session-dur">${fmt(item.data.duration)}</div>
+        <button class="delete-btn" onclick="deleteSleep('${item.data.id}')">✕</button>
+      </div>`;
+    } else {
+      return `<div class="session-item">
+        <div class="session-dot feed"></div>
+        <div class="session-info">
+          <div class="session-title">${item.data.type}</div>
+          <div class="session-sub">${fmtTime(item.data.ts)}</div>
+        </div>
+        <div class="session-dur">${item.data.ml} ml</div>
+        <button class="delete-btn" onclick="deleteFeed('${item.data.id}')">✕</button>
+      </div>`;
+    }
+  }).join('');
+}
+
+function deleteSleep(id) {
+  state.sleepSessions = state.sleepSessions.filter(s => s.id != id);
+  save('sleepSessions');
+  updateHomeStats(); updateRecentLog();
+  showToast('Eintrag gelöscht');
+}
+function deleteFeed(id) {
+  state.feedLogs = state.feedLogs.filter(f => f.id != id);
+  save('feedLogs');
+  updateHomeStats(); updateRecentLog();
+  showToast('Eintrag gelöscht');
+}
+
+// ===================== HOME GREETING =====================
+function updateGreeting() {
+  const h = new Date().getHours();
+  const greet = h < 5 ? 'Gute Nacht' : h < 11 ? 'Guten Morgen' : h < 17 ? 'Guten Tag' : 'Guten Abend';
+  document.getElementById('home-greeting').textContent = greet;
+  document.getElementById('home-date').textContent = new Date().toLocaleDateString('de-DE', { weekday:'long', day:'numeric', month:'long' });
+  const name = state.profile.name;
+  if (name) {
+    document.getElementById('home-babyname').textContent = name + ' schläft gerade ' + (state.activeSleep ? '😴' : '🌟');
+  } else {
+    document.getElementById('home-babyname').textContent = 'Profil noch nicht eingerichtet';
+  }
+}
+
+// ===================== STATS =====================
+let sleepChart = null, feedChart = null;
+
+function switchStatTab(tab) {
+  ['sleep','feed','insights'].forEach(t => {
+    document.getElementById('stat-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#page-stats .tab').forEach((btn, i) => {
+    btn.classList.toggle('active', ['sleep','feed','insights'][i] === tab);
+  });
+  if (tab === 'sleep') renderSleepChart();
+  if (tab === 'feed') renderFeedChart();
+  if (tab === 'insights') renderInsights();
+}
+
+function renderStats() {
+  // Sleep stats
+  const sessions = state.sleepSessions;
+  if (sessions.length === 0) {
+    ['avg-sleep-day','longest-phase','avg-phases','total-days'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
+  } else {
+    const days = {};
+    sessions.forEach(s => {
+      const d = dayStart(s.start);
+      days[d] = (days[d] || []);
+      days[d].push(s);
+    });
+    const dayCount = Object.keys(days).length;
+    const totalMs = sessions.reduce((sum, s) => sum + s.duration, 0);
+    const avgMs = totalMs / dayCount;
+    const longest = Math.max(...sessions.map(s => s.duration));
+    const avgPhases = sessions.length / dayCount;
+    document.getElementById('avg-sleep-day').textContent = fmt(avgMs);
+    document.getElementById('longest-phase').textContent = fmt(longest);
+    document.getElementById('avg-phases').textContent = avgPhases.toFixed(1);
+    document.getElementById('total-days').textContent = dayCount;
+  }
+
+  // Sleep list
+  const sleepListEl = document.getElementById('sleep-list');
+  if (sessions.length === 0) {
+    sleepListEl.innerHTML = '<div class="empty"><p>Noch keine Schlafphasen</p></div>';
+  } else {
+    sleepListEl.innerHTML = sessions.slice(0,20).map(s => `
+      <div class="session-item">
+        <div class="session-dot"></div>
+        <div class="session-info">
+          <div class="session-title">${fmtDate(s.start)}</div>
+          <div class="session-sub">${fmtTime(s.start)} – ${fmtTime(s.end)}</div>
+        </div>
+        <div class="session-dur">${fmt(s.duration)}</div>
+      </div>`).join('');
+  }
+
+  // Feed stats
+  const feeds = state.feedLogs;
+  if (feeds.length === 0) {
+    document.getElementById('avg-ml-day').textContent = '—';
+    document.getElementById('avg-feeds-day').textContent = '—';
+  } else {
+    const fdays = {};
+    feeds.forEach(f => { const d = dayStart(f.ts); fdays[d] = (fdays[d] || []); fdays[d].push(f); });
+    const fdayCount = Object.keys(fdays).length;
+    const totalMl = feeds.reduce((sum, f) => sum + f.ml, 0);
+    document.getElementById('avg-ml-day').textContent = Math.round(totalMl / fdayCount) + ' ml';
+    document.getElementById('avg-feeds-day').textContent = (feeds.length / fdayCount).toFixed(1);
+  }
+
+  const feedListEl = document.getElementById('feed-list');
+  if (feeds.length === 0) {
+    feedListEl.innerHTML = '<div class="empty"><p>Noch keine Mahlzeiten</p></div>';
+  } else {
+    feedListEl.innerHTML = feeds.slice(0,15).map(f => `
+      <div class="session-item">
+        <div class="session-dot feed"></div>
+        <div class="session-info">
+          <div class="session-title">${f.type}</div>
+          <div class="session-sub">${fmtDate(f.ts)}, ${fmtTime(f.ts)}</div>
+        </div>
+        <div class="session-dur">${f.ml} ml</div>
+      </div>`).join('');
+  }
+
+  renderSleepChart();
+}
+
+function getLast7Days() {
+  return Array.from({length:7}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i)); d.setHours(0,0,0,0); return d;
+  });
+}
+
+function renderSleepChart() {
+  const days = getLast7Days();
+  const labels = days.map(d => d.toLocaleDateString('de-DE', {weekday:'short', day:'numeric'}));
+  const data = days.map(d => {
+    const ds = d.getTime(), de = ds + 86400000;
+    const ms = state.sleepSessions.filter(s => s.start >= ds && s.start < de).reduce((sum, s) => sum + s.duration, 0);
+    return Math.round(ms / 3600000 * 10) / 10;
+  });
+  const ctx = document.getElementById('chart-sleep');
+  if (sleepChart) sleepChart.destroy();
+  sleepChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: 'rgba(124,106,247,0.7)', borderRadius: 6, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 11 } }, beginAtZero: true, suggestedMax: 20 }
+      }
+    }
+  });
+}
+
+function renderFeedChart() {
+  const days = getLast7Days();
+  const labels = days.map(d => d.toLocaleDateString('de-DE', {weekday:'short', day:'numeric'}));
+  const data = days.map(d => {
+    const ds = d.getTime(), de = ds + 86400000;
+    return state.feedLogs.filter(f => f.ts >= ds && f.ts < de).reduce((sum, f) => sum + f.ml, 0);
+  });
+  const ctx = document.getElementById('chart-feed');
+  if (feedChart) feedChart.destroy();
+  feedChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: 'rgba(45,212,191,0.7)', borderRadius: 6, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 11 } }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function renderInsights() {
+  const el = document.getElementById('insights-content');
+  const sessions = state.sleepSessions;
+
+  if (sessions.length < 10) {
+    el.innerHTML = `
+      <div class="card">
+        <div class="insight">
+          <div class="insight-icon">📊</div>
+          <div class="insight-text">Noch zu wenig Daten für Prognosen. Bitte erfasse mindestens <strong>10 Schlafphasen</strong>. Aktuell: ${sessions.length}/10.</div>
+        </div>
+        <div class="percentile-bar" style="margin-top:8px;">
+          <div class="percentile-fill" style="width:${Math.round(sessions.length/10*100)}%"></div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const insights = [];
+
+  // Typische Schlafdauer
+  const avgDur = sessions.reduce((s, x) => s + x.duration, 0) / sessions.length;
+  insights.push({ icon: '⏱️', text: `Durchschnittliche Schlafphasenlänge: <strong>${fmt(avgDur)}</strong>` });
+
+  // Typische Einschlafzeiten
+  const hours = sessions.map(s => new Date(s.start).getHours());
+  const hourBuckets = Array(24).fill(0);
+  hours.forEach(h => hourBuckets[h]++);
+  const peakHour = hourBuckets.indexOf(Math.max(...hourBuckets));
+  insights.push({ icon: '🕐', text: `Baby schläft am häufigsten gegen <strong>${peakHour}:00 – ${peakHour+1}:00 Uhr</strong> ein` });
+
+  // Nachtschlaf vs. Tagschlaf
+  const nightSessions = sessions.filter(s => { const h = new Date(s.start).getHours(); return h >= 20 || h < 6; });
+  const nightPct = Math.round(nightSessions.length / sessions.length * 100);
+  insights.push({ icon: '🌙', text: `<strong>${nightPct}%</strong> aller Schlafphasen sind nachts (20–6 Uhr)` });
+
+  // Nächste Schlafphase Prognose
+  const recent = sessions.slice(0, Math.min(7, sessions.length));
+  if (recent.length >= 3) {
+    const lastEnd = recent[0].end;
+    const avgGap = recent.slice(0, -1).reduce((sum, s, i) => {
+      return sum + (s.start - recent[i+1].end);
+    }, 0) / (recent.length - 1);
+    const predicted = lastEnd + avgGap;
+    const diff = predicted - Date.now();
+    if (diff > 0 && diff < 6 * 3600000) {
+      insights.push({ icon: '🔮', text: `Nächste Schlafphase voraussichtlich in <strong>${fmt(diff)}</strong> (ca. ${fmtTime(predicted)})` });
+    }
+  }
+
+  // Schlaftrend
+  if (sessions.length >= 14) {
+    const first7 = sessions.slice(-7).reduce((s, x) => s + x.duration, 0) / 7;
+    const last7 = sessions.slice(0, 7).reduce((s, x) => s + x.duration, 0) / 7;
+    const diff = last7 - first7;
+    if (Math.abs(diff) > 600000) {
+      const trend = diff > 0 ? '📈 zugenommen' : '📉 abgenommen';
+      insights.push({ icon: diff > 0 ? '📈' : '📉', text: `Schlafdauer hat in den letzten zwei Wochen <strong>${trend}</strong> (${diff > 0 ? '+' : ''}${fmt(Math.abs(diff))} pro Phase)` });
+    }
+  }
+
+  el.innerHTML = insights.map(ins => `
+    <div class="insight">
+      <div class="insight-icon">${ins.icon}</div>
+      <div class="insight-text">${ins.text}</div>
+    </div>`).join('');
+}
+
+// ===================== GROWTH =====================
+let weightChart = null;
+
+function saveGrowth() {
+  const date = document.getElementById('growth-date').value;
+  const weight = parseInt(document.getElementById('growth-weight').value) || 0;
+  const height = parseFloat(document.getElementById('growth-height').value) || 0;
+  const head = parseFloat(document.getElementById('growth-head').value) || 0;
+  if (!date) { showToast('⚠️ Bitte Datum wählen'); return; }
+  const entry = { id: Date.now(), date, weight, height, head };
+  state.growthLogs.push(entry);
+  state.growthLogs.sort((a, b) => a.date.localeCompare(b.date));
+  save('growthLogs');
+  document.getElementById('growth-date').value = '';
+  document.getElementById('growth-weight').value = '';
+  document.getElementById('growth-height').value = '';
+  document.getElementById('growth-head').value = '';
+  renderGrowth();
+  showToast('📏 Messung gespeichert');
+}
+
+function renderGrowth() {
+  const logs = state.growthLogs;
+
+  // Weight chart
+  const ctx = document.getElementById('chart-weight');
+  if (weightChart) weightChart.destroy();
+  if (logs.length > 0) {
+    weightChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: logs.map(l => new Date(l.date).toLocaleDateString('de-DE', {day:'numeric',month:'short'})),
+        datasets: [{
+          data: logs.map(l => l.weight),
+          borderColor: 'rgba(251,191,36,0.8)',
+          backgroundColor: 'rgba(251,191,36,0.1)',
+          tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#fbbf24'
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 11 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 11 } } }
+        }
+      }
+    });
+  }
+
+  // WHO percentile (simplified reference values for weight, age in weeks)
+  const whoEl = document.getElementById('who-content');
+  if (logs.length > 0 && state.profile.birthday) {
+    const latest = logs[logs.length - 1];
+    const ageWeeks = getAgeWeeks(new Date(state.profile.birthday).getTime());
+    const gender = state.profile.gender || 'm';
+
+    // Simplified WHO median weight by week (grams) - rough reference
+    const whoMedian = (w) => {
+      if (w <= 0) return 3500;
+      if (w <= 4) return 3500 + w * 200;
+      if (w <= 13) return 4300 + (w - 4) * 220;
+      if (w <= 26) return 6280 + (w - 13) * 170;
+      return 8490 + (w - 26) * 90;
+    };
+    const median = whoMedian(ageWeeks);
+    const pct = Math.min(99, Math.max(1, Math.round(50 + (latest.weight - median) / (median * 0.15) * 25)));
+
+    whoEl.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+          <span style="color:var(--text2);">Gewicht (${latest.weight}g)</span>
+          <span style="color:var(--amber);">${pct}. Perzentile</span>
+        </div>
+        <div class="percentile-bar"><div class="percentile-fill" style="width:${pct}%"></div></div>
+        <div style="font-size:12px;color:var(--text3);">Alter: ${ageWeeks} Wochen · WHO-Referenz: ~${Math.round(median/100)*100}g</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:8px;">⚠️ Nur Orientierungswerte. Bitte immer den Kinderarzt hinzuziehen.</div>`;
+  } else if (logs.length === 0) {
+    whoEl.innerHTML = '<div class="empty"><div class="empty-icon">📏</div><p>Noch keine Messungen</p></div>';
+  } else {
+    whoEl.innerHTML = '<div style="font-size:13px;color:var(--text3);">Bitte Geburtsdatum im Profil eintragen für Perzentilen.</div>';
+  }
+
+  // Growth list
+  const listEl = document.getElementById('growth-list');
+  if (logs.length === 0) {
+    listEl.innerHTML = '<div class="empty"><div class="empty-icon">📊</div><p>Noch keine Messungen eingetragen</p></div>';
+  } else {
+    listEl.innerHTML = [...logs].reverse().map(l => `
+      <div class="session-item">
+        <div class="session-dot" style="background:var(--amber)"></div>
+        <div class="session-info">
+          <div class="session-title">${new Date(l.date).toLocaleDateString('de-DE', {day:'numeric',month:'long',year:'numeric'})}</div>
+          <div class="session-sub">${l.weight ? l.weight + 'g' : ''} ${l.height ? '· ' + l.height + 'cm' : ''} ${l.head ? '· KU: ' + l.head + 'cm' : ''}</div>
+        </div>
+        <button class="delete-btn" onclick="deleteGrowth('${l.id}')">✕</button>
+      </div>`).join('');
+  }
+}
+
+function deleteGrowth(id) {
+  state.growthLogs = state.growthLogs.filter(l => l.id != id);
+  save('growthLogs');
+  renderGrowth();
+  showToast('Eintrag gelöscht');
+}
+
+// ===================== PROFILE =====================
+function renderProfile() {
+  const p = state.profile;
+  if (p.name) document.getElementById('profile-name').value = p.name;
+  if (p.birthday) document.getElementById('profile-birthday').value = p.birthday;
+  if (p.birthweight) document.getElementById('profile-birthweight').value = p.birthweight;
+  if (p.birthheight) document.getElementById('profile-birthheight').value = p.birthheight;
+  if (p.gender) document.getElementById('profile-gender').value = p.gender;
+
+  if (p.birthday) {
+    const ageCard = document.getElementById('age-card');
+    ageCard.style.display = 'block';
+    const ageWeeks = getAgeWeeks(new Date(p.birthday).getTime());
+    const months = Math.floor(ageWeeks / 4.33);
+    const remWeeks = ageWeeks - Math.round(months * 4.33);
+    document.getElementById('age-display').innerHTML = `
+      <div style="font-size:28px;font-weight:300;color:var(--accent2);">${ageWeeks} Wochen</div>
+      <div style="font-size:14px;color:var(--text3);margin-top:4px;">${months > 0 ? months + ' Monate ' : ''}${remWeeks > 0 ? remWeeks + ' Wochen' : ''}</div>`;
+  }
+}
+
+function saveProfile() {
+  state.profile = {
+    name: document.getElementById('profile-name').value,
+    birthday: document.getElementById('profile-birthday').value,
+    birthweight: document.getElementById('profile-birthweight').value,
+    birthheight: document.getElementById('profile-birthheight').value,
+    gender: document.getElementById('profile-gender').value,
+  };
+  save('profile');
+  updateGreeting();
+  renderProfile();
+  showToast('✅ Profil gespeichert');
+}
+
+// ===================== EXPORT / RESET =====================
+function exportData() {
+  const data = { profile: state.profile, sleepSessions: state.sleepSessions, feedLogs: state.feedLogs, growthLogs: state.growthLogs, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'babyschlaf-export-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('📥 Export gestartet');
+}
+
+function confirmReset() {
+  if (confirm('Wirklich alle Daten löschen? Dies kann nicht rückgängig gemacht werden.')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+// ===================== PIN =====================
+const PIN_KEY = 'app_pin';
+const PIN_SESSION = 'pin_unlocked';
+let pinBuffer = '';
+let pinMode = 'unlock'; // 'unlock' | 'setup' | 'change-old' | 'change-new'
+let pinNewTemp = '';
+
+function hashPin(pin) {
+  // Simple deterministic hash (not cryptographic, but sufficient for this use case)
+  let hash = 0;
+  for (let i = 0; i < pin.length; i++) {
+    hash = ((hash << 5) - hash) + pin.charCodeAt(i);
+    hash |= 0;
+  }
+  return String(hash);
+}
+
+function initPin() {
+  const stored = localStorage.getItem(PIN_KEY);
+  const session = sessionStorage.getItem(PIN_SESSION);
+
+  if (session === '1') {
+    // Already unlocked this session
+    unlockApp();
+    return;
+  }
+
+  if (!stored) {
+    // First time – set up PIN
+    pinMode = 'setup';
+    document.getElementById('pin-subtitle').textContent = 'Neuen PIN wählen (4 Stellen)';
+    document.getElementById('pin-setup-note').style.display = 'block';
+  } else {
+    pinMode = 'unlock';
+    document.getElementById('pin-subtitle').textContent = 'PIN eingeben';
+  }
+  document.getElementById('pin-screen').classList.remove('hidden');
+}
+
+function pinKey(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(() => processPinInput(), 150);
+  }
+}
+
+function pinDelete() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updatePinDots(state = 'normal') {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    dot.className = 'pin-dot';
+    if (state === 'error') dot.classList.add('error');
+    else if (i < pinBuffer.length) dot.classList.add('filled');
+  }
+}
+
+function processPinInput() {
+  const entered = pinBuffer;
+  pinBuffer = '';
+
+  if (pinMode === 'setup') {
+    pinNewTemp = entered;
+    pinMode = 'setup-confirm';
+    document.getElementById('pin-subtitle').textContent = 'PIN bestätigen';
+    document.getElementById('pin-setup-note').style.display = 'none';
+    updatePinDots();
+    return;
+  }
+
+  if (pinMode === 'setup-confirm') {
+    if (entered === pinNewTemp) {
+      localStorage.setItem(PIN_KEY, hashPin(entered));
+      sessionStorage.setItem(PIN_SESSION, '1');
+      showToast('✅ PIN gespeichert');
+      unlockApp();
+    } else {
+      pinNewTemp = '';
+      pinMode = 'setup';
+      document.getElementById('pin-subtitle').textContent = 'PINs stimmen nicht überein – neu wählen';
+      updatePinDots('error');
+      setTimeout(() => { updatePinDots(); document.getElementById('pin-error').textContent = ''; }, 600);
+    }
+    return;
+  }
+
+  if (pinMode === 'change-old') {
+    const stored = localStorage.getItem(PIN_KEY);
+    if (hashPin(entered) === stored) {
+      pinMode = 'change-new';
+      document.getElementById('pin-subtitle').textContent = 'Neuen PIN wählen';
+      updatePinDots();
+    } else {
+      document.getElementById('pin-error').textContent = 'Falscher PIN';
+      updatePinDots('error');
+      setTimeout(() => updatePinDots(), 600);
+    }
+    return;
+  }
+
+  if (pinMode === 'change-new') {
+    pinNewTemp = entered;
+    pinMode = 'change-confirm';
+    document.getElementById('pin-subtitle').textContent = 'Neuen PIN bestätigen';
+    updatePinDots();
+    return;
+  }
+
+  if (pinMode === 'change-confirm') {
+    if (entered === pinNewTemp) {
+      localStorage.setItem(PIN_KEY, hashPin(entered));
+      sessionStorage.setItem(PIN_SESSION, '1');
+      showToast('✅ PIN geändert');
+      document.getElementById('pin-screen').classList.add('hidden');
+    } else {
+      pinMode = 'change-new';
+      document.getElementById('pin-subtitle').textContent = 'PINs stimmen nicht überein – neu wählen';
+      updatePinDots('error');
+      setTimeout(() => updatePinDots(), 600);
+    }
+    return;
+  }
+
+  // Normal unlock
+  const stored = localStorage.getItem(PIN_KEY);
+  if (hashPin(entered) === stored) {
+    sessionStorage.setItem(PIN_SESSION, '1');
+    unlockApp();
+  } else {
+    document.getElementById('pin-error').textContent = 'Falscher PIN – bitte erneut versuchen';
+    updatePinDots('error');
+    setTimeout(() => { updatePinDots(); }, 600);
+  }
+}
+
+function unlockApp() {
+  document.getElementById('pin-screen').classList.add('hidden');
+  initApp();
+}
+
+function startPinChange() {
+  pinBuffer = '';
+  pinMode = 'change-old';
+  document.getElementById('pin-subtitle').textContent = 'Aktuellen PIN eingeben';
+  document.getElementById('pin-setup-note').style.display = 'none';
+  document.getElementById('pin-error').textContent = '';
+  updatePinDots();
+  document.getElementById('pin-screen').classList.remove('hidden');
+}
+
+// ===================== INIT =====================
+function initApp() {
+  document.getElementById('growth-date').value = new Date().toISOString().slice(0,10);
+  updateGreeting();
+  updateSleepUI();
+  updateHomeStats();
+  updateRecentLog();
+  setInterval(() => { updateHomeStats(); updateGreeting(); }, 60000);
+}
+
+// Lock app when tab loses focus for > 5 minutes
+let blurTime = null;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    blurTime = Date.now();
+  } else {
+    if (blurTime && (Date.now() - blurTime) > 5 * 60 * 1000) {
+      sessionStorage.removeItem(PIN_SESSION);
+      initPin();
+    }
+    blurTime = null;
+  }
+});
+
+initPin();
+</script>
+</body>
+</html>
