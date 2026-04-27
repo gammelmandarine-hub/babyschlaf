@@ -334,6 +334,36 @@ input[type=range] { accent-color: var(--accent); }
 .pin-error-msg { font-size: 13px; color: var(--rose); margin-top: 20px; min-height: 20px; }
 .pin-setup-note { font-size: 12px; color: var(--text3); margin-top: 16px; text-align: center; max-width: 260px; line-height: 1.6; }
 .pin-change-link { font-size: 13px; color: var(--accent2); cursor: pointer; margin-top: 24px; text-decoration: underline; }
+
+/* Diaper buttons */
+.diaper-row{display:flex;gap:8px;margin:8px 0}
+.diaper-btn{flex:1;padding:12px 8px;border-radius:12px;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:500;cursor:pointer;text-align:center;transition:all 0.15s;border:1px solid}
+.diaper-btn:active{transform:scale(0.97)}
+.diaper-btn.wet{background:rgba(45,212,191,0.12);border-color:rgba(45,212,191,0.3);color:var(--teal)}
+.diaper-btn.wet:active{background:rgba(45,212,191,0.25)}
+.diaper-btn.both{background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.3);color:var(--amber)}
+.diaper-btn.both:active{background:rgba(251,191,36,0.25)}
+/* Milestone checklist */
+.ms-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:6px;cursor:pointer;transition:background 0.15s;background:var(--bg3);border:1px solid var(--border)}
+.ms-item:active{transform:scale(0.99)}
+.ms-item.done{background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.25)}
+.ms-item.upcoming{opacity:0.65}
+.ms-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all 0.2s;font-size:13px}
+.ms-item.done .ms-check{background:var(--green);border-color:var(--green);color:white}
+.ms-item.upcoming .ms-check{border-color:var(--text3)}
+.ms-label{font-size:13px;color:var(--text2);line-height:1.5;flex:1}
+.ms-item.done .ms-label{color:var(--text3);text-decoration:line-through}
+.ms-age{font-size:11px;color:var(--text3);margin-top:2px}
+/* Wake Window */
+.ww-pill{display:inline-flex;align-items:center;gap:6px;border-radius:50px;padding:6px 14px;font-size:13px;font-weight:500;margin-bottom:4px;border:1px solid}
+.ww-ok{background:rgba(52,211,153,0.12);border-color:var(--green);color:var(--green)}
+.ww-warn{background:rgba(251,191,36,0.12);border-color:var(--amber);color:var(--amber)}
+.ww-over{background:rgba(251,113,133,0.12);border-color:var(--rose);color:var(--rose)}
+.ww-idle{background:var(--bg3);border-color:var(--border);color:var(--text3)}
+.ww-bar-wrap{width:100%;max-width:260px;margin:6px auto 0}
+.ww-bar-track{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;position:relative}
+.ww-bar-fill{height:100%;border-radius:3px;transition:width 1s linear}
+.ww-bar-fill.ok{background:var(--green)}.ww-bar-fill.warn{background:var(--amber)}.ww-bar-fill.over{background:var(--rose)}.ww-bar-fill.idle{background:var(--border)}
 </style>
 </head>
 <body>
@@ -370,22 +400,12 @@ input[type=range] { accent-color: var(--accent); }
 
 
   <!-- Voice control -->
-  <div style="display:flex;flex-direction:column;align-items:center;margin:-8px 0 16px;width:100%;padding:0 16px">
+  <div style="display:flex;flex-direction:column;align-items:center;margin:-8px 0 16px">
     <div class="voice-header">
       <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Sprachsteuerung">🎤</button>
       <div style="font-size:12px;color:var(--text3)">Sprachsteuerung</div>
-      <button onclick="toggleVoiceHelp()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:4px 8px;border-radius:6px;margin-left:4px" title="Befehle anzeigen">&#x2753;</button>
     </div>
     <div class="voice-feedback" id="voice-feedback"></div>
-    <div class="voice-help" id="voice-help">
-      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px;text-align:center">Sprachbefehle</div>
-      <div class="voice-help-row"><div class="voice-cmd">"Schlaf start"</div><div class="voice-desc">oder: schlafen, gute Nacht</div></div>
-      <div class="voice-help-row"><div class="voice-cmd">"Schlaf stop"</div><div class="voice-desc">oder: aufgewacht, wach, Ende</div></div>
-      <div class="voice-help-row"><div class="voice-cmd">"150 ml"</div><div class="voice-desc">oder: 150 getrunken, gefüttert 120</div></div>
-      <div class="voice-help-row"><div class="voice-cmd">"Windel nass"</div><div class="voice-desc">oder: gewickelt, nass, pipi</div></div>
-      <div class="voice-help-row"><div class="voice-cmd">"Windel beides"</div><div class="voice-desc">oder: groß, kacka, beides</div></div>
-      <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center">Nur Chrome / Android · Deutsch</div>
-    </div>
   </div>
   <!-- Mood picker -->
   <div id="mood-picker" style="display:none;" class="card">
@@ -668,6 +688,52 @@ input[type=range] { accent-color: var(--accent); }
     <button class="btn btn-outline" onclick="startPinChange()">PIN ändern</button>
   </div>
 
+  <!-- Daten nachträglich einpflegen -->
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:4px;">Daten nachtr&#228;glich einpflegen</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:16px;">F&#252;r Daten von der Hebamme, U-Untersuchungen oder vergangene Tage</div>
+    <div style="margin-bottom:16px;">
+      <button class="hist-type-btn active" onclick="setHistType('sleep',this)">Schlaf</button>
+      <button class="hist-type-btn" onclick="setHistType('feed',this)">Mahlzeit</button>
+      <button class="hist-type-btn" onclick="setHistType('diaper',this)">Windel</button>
+      <button class="hist-type-btn" onclick="setHistType('growth',this)">Wachstum</button>
+    </div>
+    <div id="hist-sleep" class="hist-fields show">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Einschlafen</label><input class="form-input" type="datetime-local" id="hist-sleep-start"></div>
+        <div class="form-group"><label class="form-label">Aufwachen</label><input class="form-input" type="datetime-local" id="hist-sleep-end"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="histSaveSleep()">Schlaf eintragen</button>
+    </div>
+    <div id="hist-feed" class="hist-fields">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Datum &amp; Uhrzeit</label><input class="form-input" type="datetime-local" id="hist-feed-ts"></div>
+        <div class="form-group"><label class="form-label">Menge (ml)</label><input class="form-input" type="number" id="hist-feed-ml" placeholder="120"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Art</label><select class="form-select" id="hist-feed-type"><option>Muttermilch</option><option>Flasche</option><option>Beikost</option></select></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="histSaveFeed()">Mahlzeit eintragen</button>
+    </div>
+    <div id="hist-diaper" class="hist-fields">
+      <div class="form-group"><label class="form-label">Datum &amp; Uhrzeit</label><input class="form-input" type="datetime-local" id="hist-diaper-ts"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="diaper-btn wet" onclick="histSaveDiaper('wet')">&#x1F4A7; Nass</button>
+        <button class="diaper-btn both" onclick="histSaveDiaper('both')">&#x1F4A9; Beides</button>
+      </div>
+    </div>
+    <div id="hist-growth" class="hist-fields">
+      <div class="form-group"><label class="form-label">Datum der Messung</label><input class="form-input" type="date" id="hist-growth-date"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Gewicht (g)</label><input class="form-input" type="number" id="hist-growth-weight" placeholder="3500"></div>
+        <div class="form-group"><label class="form-label">Gr&#246;&#223;e (cm)</label><input class="form-input" type="number" id="hist-growth-height" placeholder="50"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Kopfumfang (cm)</label><input class="form-input" type="number" id="hist-growth-head" placeholder="34"></div>
+        <div class="form-group"><label class="form-label">Notiz (optional)</label><input class="form-input" type="text" id="hist-growth-note" placeholder="z.B. U3"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="histSaveGrowth()">Messung eintragen</button>
+    </div>
+  </div>
+
   <!-- Über die App -->
   <div class="card">
     <div style="font-size:15px;font-weight:500;margin-bottom:16px;">ℹ️ Über BabySchlaf</div>
@@ -682,7 +748,17 @@ input[type=range] { accent-color: var(--accent); }
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start;">
         <div style="font-size:20px;flex-shrink:0">🎤</div>
-        <div><div style="font-size:13px;font-weight:500;color:var(--text2)">Sprachsteuerung</div><div style="font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5">Funktioniert in Chrome &amp; Android. Mikrofon-Button auf der Startseite → ? für alle Befehle.</div></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;color:var(--text2)">Sprachsteuerung</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5;margin-bottom:8px">Funktioniert in Chrome &amp; Android &middot; Mikrofon-Button auf der Startseite</div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;">
+            <div style="color:var(--accent2);font-weight:500">"Schlaf start"</div><div style="color:var(--text3)">oder: schlafen, gute Nacht</div>
+            <div style="color:var(--accent2);font-weight:500">"Schlaf stop"</div><div style="color:var(--text3)">oder: aufgewacht, wach, Ende</div>
+            <div style="color:var(--accent2);font-weight:500">"150 ml"</div><div style="color:var(--text3)">oder: 150 getrunken, gefüttert 120</div>
+            <div style="color:var(--accent2);font-weight:500">"Windel nass"</div><div style="color:var(--text3)">oder: gewickelt, nass, pipi</div>
+            <div style="color:var(--accent2);font-weight:500">"Windel beides"</div><div style="color:var(--text3)">oder: groß, kacka, beides</div>
+          </div>
+        </div>
       </div>
       <div style="display:flex;gap:12px;align-items:flex-start;">
         <div style="font-size:20px;flex-shrink:0">🔒</div>
@@ -767,6 +843,7 @@ input[type=range] { accent-color: var(--accent); }
 const DB={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 let state={
   profile:DB.get('profile',{}),
+  milestones:DB.get('milestones',{}),
   sleepSessions:DB.get('sleepSessions',[]),
   feedLogs:DB.get('feedLogs',[]),
   diaperLogs:DB.get('diaperLogs',[]),
@@ -783,9 +860,9 @@ function categorizeSleep(startTs,durationMs){
   return'sleep';
 }
 const CAT={
-  nap:{label:'Nickerchen',emoji:'\u{1F4A4}',color:'var(--teal)',cls:'cat-nap'},
-  sleep:{label:'Schl\u00e4fchen',emoji:'\u{1F634}',color:'var(--accent2)',cls:'cat-sleep'},
-  night:{label:'Nachtschlaf',emoji:'\u{1F319}',color:'#a0a8ff',cls:'cat-night'}
+  nap:{label:'Nickerchen',emoji:'💤',color:'var(--teal)',cls:'cat-nap'},
+  sleep:{label:'Schl\u00e4fchen',emoji:'😴',color:'var(--accent2)',cls:'cat-sleep'},
+  night:{label:'Nachtschlaf',emoji:'🌙',color:'#a0a8ff',cls:'cat-night'}
 };
 
 // UTILS
@@ -816,7 +893,7 @@ function toggleSleep(){state.activeSleep?stopSleep():startSleep()}
 function startSleep(){
   if(state.activeSleep)return;
   state.activeSleep={start:Date.now()};save('activeSleep');
-  updateSleepUI();showToast('\u{1F4A4} Schlaf gestartet');
+  updateSleepUI();showToast('💤 Schlaf gestartet');
 }
 function stopSleep(){
   if(!state.activeSleep)return;
@@ -850,7 +927,7 @@ function updateSleepUI(){
     },1000);
     timer.textContent=fmtTimer(dur);
   }else{
-    ring.classList.remove('sleeping');emoji.textContent='\u{1F319}';label.textContent='Wach';
+    ring.classList.remove('sleeping');emoji.textContent='🌙';label.textContent='Wach';
     badge.style.display='none';timer.style.display='none';since.textContent='';
     btn.textContent='Schlafen starten';btn.style.background='var(--accent)';
   }
@@ -864,7 +941,7 @@ function logFeed(){
   state.feedLogs.unshift({id:Date.now(),ts:Date.now(),ml,type});save('feedLogs');
   document.getElementById('feed-ml').value='';document.querySelectorAll('.ml-btn').forEach(b=>b.classList.remove('selected'));
   updateHomeStats();updateRecentLog();updateSinceFeed();
-  showToast('\u{1F37C} '+ml+' ml eingetragen');
+  showToast('🍼 '+ml+' ml eingetragen');
 }
 
 
@@ -876,7 +953,7 @@ function setFeedMl(v){
 function logDiaper(type){
   state.diaperLogs.unshift({id:Date.now(),ts:Date.now(),type});save('diaperLogs');
   updateHomeStats();updateRecentLog();
-  showToast(type==='wet'?'\u{1F4A7} Nasse Windel eingetragen':'\u{1F4A9} Windel (beides) eingetragen');
+  showToast(type==='wet'?'💧 Nasse Windel eingetragen':'💩 Windel (beides) eingetragen');
 }
 
 // SINCE LAST FEED
@@ -886,7 +963,7 @@ function updateSinceFeed(){
   const mins=Math.floor((Date.now()-state.feedLogs[0].ts)/60000),h=Math.floor(mins/60),m=mins%60;
   const txt=h>0?h+'h '+m+'min':m+' min';
   let cls='since-feed';if(mins>180)cls+=' urgent';else if(mins>120)cls+=' warn';
-  wrap.innerHTML='<div class="'+cls+'">\u{1F37C} Letzte Mahlzeit vor '+txt+'</div>';
+  wrap.innerHTML='<div class="'+cls+'">🍼 Letzte Mahlzeit vor '+txt+'</div>';
 }
 
 // HOME STATS
@@ -911,18 +988,18 @@ function updateHomeStats(){
 }
 
 function updateRecentLog(){
-  const ts=todayStart(),sl=state.sleepSessions.filter(s=>s.start>=ts),fl=state.feedLogs.filter(f=>f.ts>=ts),dl=state.diaperLogs.filter(d=>d.ts>=ts);
+  const ts=todayStart(),sl=state.sleepSessions.filter(s=>s.end>=ts||s.start>=ts),fl=state.feedLogs.filter(f=>f.ts>=ts),dl=state.diaperLogs.filter(d=>d.ts>=ts);
   const all=[
-    ...sl.map(s=>({ts:s.end,type:'sleep',data:s})),
+    ...sl.map(s=>({ts:s.end||Date.now(),type:'sleep',data:s})),
     ...fl.map(f=>({ts:f.ts,type:'feed',data:f})),
     ...dl.map(d=>({ts:d.ts,type:'diaper',data:d}))
   ].sort((a,b)=>b.ts-a.ts).slice(0,10);
   const el=document.getElementById('recent-log');
-  if(!all.length){el.innerHTML='<div class="empty"><div class="empty-icon">\u{1F4CB}</div><p>Noch keine Eintr\u00e4ge heute</p></div>';return}
+  if(!all.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Noch keine Einträge heute</p></div>';return}
   el.innerHTML=all.map(item=>{
     if(item.type==='sleep'){const m=CAT[item.data.category||'sleep'];return'<div class="session-item"><div class="session-cat '+m.cls+'">'+m.emoji+'</div><div class="session-info"><div class="session-title">'+m.label+'</div><div class="session-sub">'+fmtTime(item.data.start)+' \u2013 '+fmtTime(item.data.end)+'</div></div><div class="session-dur">'+fmt(item.data.duration)+'</div>'+(item.data.mood?'<div class="session-mood">'+item.data.mood+'</div>':'')+'<button class="delete-btn" onclick="deleteSleep(\''+item.data.id+'\')">&#x2715;</button></div>'}
-    if(item.type==='feed'){return'<div class="session-item"><div class="session-cat cat-feed">\u{1F37C}</div><div class="session-info"><div class="session-title">'+item.data.type+'</div><div class="session-sub">'+fmtTime(item.data.ts)+'</div></div><div class="session-dur">'+item.data.ml+' ml</div><button class="delete-btn" onclick="deleteFeed(\''+item.data.id+'\')">&#x2715;</button></div>'}
-    const isWet=item.data.type==='wet';return'<div class="session-item"><div class="session-cat" style="background:rgba(45,212,191,0.15)">'+(isWet?'\u{1F4A7}':'\u{1F4A9}')+'</div><div class="session-info"><div class="session-title">Windel '+(isWet?'nass':'beides')+'</div><div class="session-sub">'+fmtTime(item.data.ts)+'</div></div><button class="delete-btn" onclick="deleteDiaper(\''+item.data.id+'\')">&#x2715;</button></div>';
+    if(item.type==='feed'){return'<div class="session-item"><div class="session-cat cat-feed">🍼</div><div class="session-info"><div class="session-title">'+item.data.type+'</div><div class="session-sub">'+fmtTime(item.data.ts)+'</div></div><div class="session-dur">'+item.data.ml+' ml</div><button class="delete-btn" onclick="deleteFeed(\''+item.data.id+'\')">&#x2715;</button></div>'}
+    const isWet=item.data.type==='wet';return'<div class="session-item"><div class="session-cat" style="background:rgba(45,212,191,0.15)">'+(isWet?'💧':'💩')+'</div><div class="session-info"><div class="session-title">Windel '+(isWet?'nass':'beides')+'</div><div class="session-sub">'+fmtTime(item.data.ts)+'</div></div><button class="delete-btn" onclick="deleteDiaper(\''+item.data.id+'\')">&#x2715;</button></div>';
   }).join('');
 }
 function deleteSleep(id){state.sleepSessions=state.sleepSessions.filter(s=>s.id!=id);save('sleepSessions');updateHomeStats();updateRecentLog();showToast('Gel\u00f6scht')}
@@ -933,7 +1010,7 @@ function updateGreeting(){
   const h=new Date().getHours();
   document.getElementById('home-greeting').textContent=h<5?'Gute Nacht':h<11?'Guten Morgen':h<17?'Guten Tag':'Guten Abend';
   document.getElementById('home-date').textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
-  const n=state.profile.name;document.getElementById('home-babyname').textContent=n?(n+(state.activeSleep?' schl\u00e4ft gerade \u{1F634}':' ist wach \u{1F31F}')):'Profil noch nicht eingerichtet';
+  const n=state.profile.name;document.getElementById('home-babyname').textContent=n?(n+(state.activeSleep?' schl\u00e4ft gerade 😴':' ist wach 🌟')):'Profil noch nicht eingerichtet';
 }
 
 // VOICE CONTROL
@@ -951,10 +1028,6 @@ function initVoice(){
   r.onerror=err=>{setVoiceActive(false);setVoiceFeedback('Fehler: '+err.error)};
   return r;
 }
-function toggleVoiceHelp(){
-  const el=document.getElementById('voice-help');
-  if(el)el.classList.toggle('show');
-}
 function toggleVoice(){
   if(!recognition)recognition=initVoice();
   if(!recognition)return;
@@ -962,7 +1035,7 @@ function toggleVoice(){
   setVoiceActive(true);setVoiceFeedback('H\u00f6re zu\u2026');
   try{recognition.start()}catch(e){setVoiceActive(false);setVoiceFeedback('Mikrofon-Fehler')}
 }
-function setVoiceActive(v){voiceActive=v;const btn=document.getElementById('voice-btn');btn.classList.toggle('listening',v);btn.textContent=v?'\u{1F534}':'\u{1F3A4}'}
+function setVoiceActive(v){voiceActive=v;const btn=document.getElementById('voice-btn');btn.classList.toggle('listening',v);btn.textContent=v?'🔴':'🎤'}
 function setVoiceFeedback(msg){const el=document.getElementById('voice-feedback');if(el)el.textContent=msg;setTimeout(()=>{if(el)el.textContent=''},4000)}
 
 function processVoice(texts){
@@ -1062,14 +1135,14 @@ function renderStats(){
   const csel=document.getElementById('cat-stats');
   if(csel)csel.innerHTML=Object.entries(CAT).map(([k,m])=>'<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)"><div class="session-cat '+m.cls+'">'+m.emoji+'</div><div style="flex:1"><div style="font-size:14px;font-weight:500">'+m.label+'</div><div style="font-size:12px;color:var(--text3)">'+cc[k]+' Phasen</div></div><div style="font-size:14px;font-weight:500;color:'+m.color+'">'+(ct[k]>0?fmt(ct[k]):'\u2014')+'</div></div>').join('');
   const withMood=sessions.filter(s=>s.mood),total=withMood.length;
-  const mc={'\u{1F60A}':0,'\u{1F610}':0,'\u{1F622}':0};withMood.forEach(s=>mc[s.mood]=(mc[s.mood]||0)+1);
+  const mc={'😊':0,'😐':0,'😢':0};withMood.forEach(s=>mc[s.mood]=(mc[s.mood]||0)+1);
   const msel=document.getElementById('mood-stats');
   if(msel)msel.innerHTML=!total?'<div style="font-size:13px;color:var(--text3)">Noch keine Stimmungen erfasst</div>':Object.entries(mc).map(([emoji,count])=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><div style="font-size:22px">'+emoji+'</div><div style="flex:1;background:var(--bg3);border-radius:4px;height:8px;overflow:hidden"><div style="width:'+Math.round(count/total*100)+'%;height:100%;background:var(--accent2);border-radius:4px"></div></div><div style="font-size:13px;color:var(--text2);min-width:50px;text-align:right">'+count+'x ('+Math.round(count/total*100)+'%)</div></div>').join('');
   document.getElementById('sleep-list').innerHTML=!sessions.length?'<div class="empty"><p>Noch keine Schlafphasen</p></div>':sessions.slice(0,20).map(s=>{const m=CAT[s.category||'sleep'];return'<div class="session-item"><div class="session-cat '+m.cls+'">'+m.emoji+'</div><div class="session-info"><div class="session-title">'+fmtDate(s.start)+'</div><div class="session-sub">'+fmtTime(s.start)+' \u2013 '+fmtTime(s.end)+'</div></div><div class="session-dur">'+fmt(s.duration)+'</div>'+(s.mood?'<div class="session-mood">'+s.mood+'</div>':'')+'</div>'}).join('');
   const feeds=state.feedLogs;
   if(!feeds.length){document.getElementById('avg-ml-day').textContent='\u2014';document.getElementById('avg-feeds-day').textContent='\u2014'}
   else{const fd={};feeds.forEach(f=>{const d=dayStart(f.ts);fd[d]=(fd[d]||[]);fd[d].push(f)});const fdc=Object.keys(fd).length;document.getElementById('avg-ml-day').textContent=Math.round(feeds.reduce((s,f)=>s+f.ml,0)/fdc)+' ml';document.getElementById('avg-feeds-day').textContent=(feeds.length/fdc).toFixed(1)}
-  document.getElementById('feed-list').innerHTML=!feeds.length?'<div class="empty"><p>Noch keine Mahlzeiten</p></div>':feeds.slice(0,15).map(f=>'<div class="session-item"><div class="session-cat cat-feed">\u{1F37C}</div><div class="session-info"><div class="session-title">'+f.type+'</div><div class="session-sub">'+fmtDate(f.ts)+', '+fmtTime(f.ts)+'</div></div><div class="session-dur">'+f.ml+' ml</div></div>').join('');
+  document.getElementById('feed-list').innerHTML=!feeds.length?'<div class="empty"><p>Noch keine Mahlzeiten</p></div>':feeds.slice(0,15).map(f=>'<div class="session-item"><div class="session-cat cat-feed">🍼</div><div class="session-info"><div class="session-title">'+f.type+'</div><div class="session-sub">'+fmtDate(f.ts)+', '+fmtTime(f.ts)+'</div></div><div class="session-dur">'+f.ml+' ml</div></div>').join('');
   renderSleepChart();
 }
 
@@ -1143,9 +1216,17 @@ function renderBar(v,mn,mx,unit,label){
   return'<div style="margin:8px 0"><div class="bar-label"><span>'+label+'</span><span style="color:var(--text)">'+(v!==null?v+' '+unit:'\u2014')+' <span style="color:var(--text3)">(Richtwert: '+mn+'\u2013'+mx+' '+unit+')</span></span></div><div class="bar-track"><div class="bar-range" style="left:'+rl+'%;width:'+rw+'%"></div>'+(v!==null?'<div class="bar-fill '+col+'" style="width:'+fw+'%"></div>':'')+'<div class="bar-marker" style="left:'+rl+'%"></div><div class="bar-marker" style="left:'+Math.round(mx/tot*100)+'%"></div></div></div>';
 }
 
+
+function toggleMilestone(key){
+  state.milestones[key]=!state.milestones[key];
+  save('milestones');
+  // Re-render insights to update checkboxes
+  renderInsights();
+}
+
 function renderInsights(){
   const el=document.getElementById('insights-content'),weeks=getAgeWeeks();
-  if(weeks===null){el.innerHTML='<div class="card"><div class="insight"><div class="insight-icon">\u{1F476}</div><div class="insight-text">Bitte das <strong>Geburtsdatum</strong> im Profil eintragen.</div></div></div>';return}
+  if(weeks===null){el.innerHTML='<div class="card"><div class="insight"><div class="insight-icon">👶</div><div class="insight-text">Bitte das <strong>Geburtsdatum</strong> im Profil eintragen.</div></div></div>';return}
   const rs=gRef(RS,weeks),rf=gRef(RF,weeks),sessions=state.sleepSessions,feeds=state.feedLogs;
   const last14=Date.now()-14*86400000,recS=sessions.filter(s=>s.start>=last14),recF=feeds.filter(f=>f.ts>=last14);
   let avgSH=null,avgP=null,avgMl=null,avgFe=null;
@@ -1153,26 +1234,44 @@ function renderInsights(){
   if(recF.length>=3){const fd={};recF.forEach(f=>{const d=dayStart(f.ts);fd[d]=(fd[d]||0)+f.ml});const fdc=Object.keys(fd).length;avgMl=Math.round(Object.values(fd).reduce((a,b)=>a+b,0)/fdc);avgFe=Math.round(recF.length/fdc*10)/10}
   const isReg=RR.some(rw=>Math.abs(weeks-rw)<=1),ms=RM.filter(m=>weeks>=m.von&&weeks<m.bis),up=RM.filter(m=>m.von>weeks&&m.von<=weeks+8);
   const napC=recS.filter(s=>s.category==='nap').length,nightC=recS.filter(s=>s.category==='night').length,sleepC=recS.filter(s=>s.category==='sleep').length;
-  const wm=recS.filter(s=>s.mood),sadP=wm.length?Math.round(wm.filter(s=>s.mood==='\u{1F622}').length/wm.length*100):null,hapP=wm.length?Math.round(wm.filter(s=>s.mood==='\u{1F60A}').length/wm.length*100):null;
+  const wm=recS.filter(s=>s.mood),sadP=wm.length?Math.round(wm.filter(s=>s.mood==='😢').length/wm.length*100):null,hapP=wm.length?Math.round(wm.filter(s=>s.mood==='😊').length/wm.length*100):null;
   // Diaper insights
   const recD=state.diaperLogs.filter(d=>d.ts>=last14);
   let html='<div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Alter: <strong style="color:var(--text)">'+weeks+' Wochen</strong> \u00b7 Basis: letzte 14 Tage</div>';
   html+='<div style="font-size:13px;font-weight:500;margin-bottom:10px;color:var(--text2)">Schlaf</div>';
-  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">\u{1F634}</div><div class="rec-title">Gesamtschlaf / Tag</div><div class="rec-badge badge-'+scColor(avgSH,rs[2],rs[3])+'">'+scLabel(avgSH,rs[2],rs[3])+'</div></div>'+renderBar(avgSH,rs[2],rs[3],'h','Stunden')+'<div class="rec-text">Richtwert f\u00fcr '+weeks+' Wochen: <strong>'+rs[2]+'\u2013'+rs[3]+'h</strong> pro Tag.</div></div>';
-  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">\u{1F522}</div><div class="rec-title">Schlafphasen / Tag</div><div class="rec-badge badge-'+scColor(avgP,rs[4],rs[5])+'">'+scLabel(avgP,rs[4],rs[5])+'</div></div>'+renderBar(avgP,rs[4],rs[5],'Phasen','Phasen/Tag')+'<div class="rec-text">Typisch: <strong>'+rs[4]+'\u2013'+rs[5]+' Phasen</strong> t\u00e4glich.</div></div>';
-  if(recS.length>=5)html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">\u{1F4C2}</div><div class="rec-title">Schlaf-Kategorien</div></div><div class="rec-text">Letzte 14 Tage: <strong>'+nightC+'x Nachtschlaf</strong>, <strong>'+sleepC+'x Schl\u00e4fchen</strong>, <strong>'+napC+'x Nickerchen</strong>.<br>'+(weeks<13?'Viele kurze Phasen sind normal.':weeks<26?'Nickerchen werden seltener – gesunde Entwicklung.':'Meist ein oder zwei Schl\u00e4fchen plus langer Nachtschlaf.')+'</div></div>';
-  if(wm.length>=5)html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">\u{1F60A}</div><div class="rec-title">Aufwach-Stimmung</div><div class="rec-badge badge-'+(hapP>=60?'green':sadP>=40?'amber':'blue')+'">'+(hapP>=60?'Gut erholt':sadP>=40?'Oft unruhig':'Gemischt')+'</div></div><div class="rec-text">'+hapP+'% ausgeruht, '+sadP+'% unruhig.'+(sadP>=40?' H\u00e4ufige Unruhe kann auf zu kurze Phasen hinweisen.':hapP>=70?' Das Baby erholt sich gut!':' Normale Verteilung.')+'</div></div>';
+  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">😴</div><div class="rec-title">Gesamtschlaf / Tag</div><div class="rec-badge badge-'+scColor(avgSH,rs[2],rs[3])+'">'+scLabel(avgSH,rs[2],rs[3])+'</div></div>'+renderBar(avgSH,rs[2],rs[3],'h','Stunden')+'<div class="rec-text">Richtwert f\u00fcr '+weeks+' Wochen: <strong>'+rs[2]+'\u2013'+rs[3]+'h</strong> pro Tag.</div></div>';
+  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">🔢</div><div class="rec-title">Schlafphasen / Tag</div><div class="rec-badge badge-'+scColor(avgP,rs[4],rs[5])+'">'+scLabel(avgP,rs[4],rs[5])+'</div></div>'+renderBar(avgP,rs[4],rs[5],'Phasen','Phasen/Tag')+'<div class="rec-text">Typisch: <strong>'+rs[4]+'\u2013'+rs[5]+' Phasen</strong> t\u00e4glich.</div></div>';
+  if(recS.length>=5)html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">📂</div><div class="rec-title">Schlaf-Kategorien</div></div><div class="rec-text">Letzte 14 Tage: <strong>'+nightC+'x Nachtschlaf</strong>, <strong>'+sleepC+'x Schl\u00e4fchen</strong>, <strong>'+napC+'x Nickerchen</strong>.<br>'+(weeks<13?'Viele kurze Phasen sind normal.':weeks<26?'Nickerchen werden seltener – gesunde Entwicklung.':'Meist ein oder zwei Schl\u00e4fchen plus langer Nachtschlaf.')+'</div></div>';
+  if(wm.length>=5)html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">😊</div><div class="rec-title">Aufwach-Stimmung</div><div class="rec-badge badge-'+(hapP>=60?'green':sadP>=40?'amber':'blue')+'">'+(hapP>=60?'Gut erholt':sadP>=40?'Oft unruhig':'Gemischt')+'</div></div><div class="rec-text">'+hapP+'% ausgeruht, '+sadP+'% unruhig.'+(sadP>=40?' H\u00e4ufige Unruhe kann auf zu kurze Phasen hinweisen.':hapP>=70?' Das Baby erholt sich gut!':' Normale Verteilung.')+'</div></div>';
   if(isReg)html+='<div class="rec-card" style="border-color:rgba(251,191,36,0.3)"><div class="rec-header"><div class="rec-icon">&#x26A1;</div><div class="rec-title">M\u00f6gliche Schlafregression</div><div class="rec-badge badge-amber">Wachstumsschub</div></div><div class="rec-text">Woche '+weeks+' ist bekannt f\u00fcr Schlafregression. Das ist <strong>Entwicklung</strong> und geht vorbei.</div><div class="rec-sub">Bekannte Regressionen: Woche 4, 8, 12, 17, 26, 37, 46</div></div>';
   html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">Ern\u00e4hrung</div>';
-  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">\u{1F37C}</div><div class="rec-title">Trinkmenge / Tag</div><div class="rec-badge badge-'+scColor(avgMl,rf[2],rf[3])+'">'+scLabel(avgMl,rf[2],rf[3])+'</div></div>'+renderBar(avgMl,rf[2],rf[3],'ml','ml/Tag')+'<div class="rec-text">Richtwert: <strong>'+rf[2]+'\u2013'+rf[3]+' ml/Tag</strong>.</div><div class="rec-sub">'+rf[6]+'</div></div>';
+  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">🍼</div><div class="rec-title">Trinkmenge / Tag</div><div class="rec-badge badge-'+scColor(avgMl,rf[2],rf[3])+'">'+scLabel(avgMl,rf[2],rf[3])+'</div></div>'+renderBar(avgMl,rf[2],rf[3],'ml','ml/Tag')+'<div class="rec-text">Richtwert: <strong>'+rf[2]+'\u2013'+rf[3]+' ml/Tag</strong>.</div><div class="rec-sub">'+rf[6]+'</div></div>';
   html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">&#x1F550;</div><div class="rec-title">Mahlzeiten / Tag</div><div class="rec-badge badge-'+scColor(avgFe,rf[4],rf[5])+'">'+scLabel(avgFe,rf[4],rf[5])+'</div></div>'+renderBar(avgFe,rf[4],rf[5],'x','Mahlzeiten')+'</div>';
   if(weeks>=17&&weeks<26)html+='<div class="rec-card" style="border-color:rgba(45,212,191,0.3)"><div class="rec-header"><div class="rec-icon">&#x1F955;</div><div class="rec-title">Beikost-Bereitschaft?</div><div class="rec-badge badge-blue">Info</div></div><div class="rec-text">Start immer mit dem <strong>Kinderarzt besprechen</strong>.</div></div>';
   if(recD.length>=5){
     const dPerDay=Math.round(recD.length/14*10)/10;
-    html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">\u{1F4A7}</div><div class="rec-title">Windeln / Tag</div><div class="rec-badge badge-'+(dPerDay>=4?'green':dPerDay>=2?'amber':'red')+'">'+dPerDay+' /Tag</div></div><div class="rec-text">Letzte 14 Tage: '+recD.filter(d=>d.type==='wet').length+' nasse, '+recD.filter(d=>d.type==='both').length+' beides. '+(weeks<8?'6\u20138 Windeln/Tag sind ein gutes Zeichen, dass das Baby genug trinkt.':'\u00dcblicherweise 4\u20136/Tag im 2. Monat.')+'</div></div>';
+    html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">💧</div><div class="rec-title">Windeln / Tag</div><div class="rec-badge badge-'+(dPerDay>=4?'green':dPerDay>=2?'amber':'red')+'">'+dPerDay+' /Tag</div></div><div class="rec-text">Letzte 14 Tage: '+recD.filter(d=>d.type==='wet').length+' nasse, '+recD.filter(d=>d.type==='both').length+' beides. '+(weeks<8?'6\u20138 Windeln/Tag sind ein gutes Zeichen, dass das Baby genug trinkt.':'\u00dcblicherweise 4\u20136/Tag im 2. Monat.')+'</div></div>';
   }
-  if(ms.length){html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">Entwicklung jetzt</div>';html+=ms.map(m=>'<div class="milestone"><div class="milestone-dot"></div><div class="milestone-text">'+m.text+'</div></div>').join('')}
-  if(up.length){html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text3)">Als n\u00e4chstes (8 Wochen)</div>';html+=up.map(m=>'<div class="milestone"><div class="milestone-dot upcoming"></div><div class="milestone-text" style="color:var(--text3)">'+m.text+'</div></div>').join('')}
+  if(ms.length){html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">Entwicklung jetzt</div>';
+    html+=ms.map(m=>{
+      const key='ms_'+m.von+'_'+m.text.slice(0,20).replace(/\s/g,'_');
+      const done=!!state.milestones[key];
+      return'<div class="ms-item'+(done?' done':'')+'" onclick="toggleMilestone(\'' +key+ '\')">'
+        +'<div class="ms-check">'+(done?'&#x2714;':'')+'</div>'
+        +'<div><div class="ms-label">'+m.text+'</div>'
+        +'<div class="ms-age">'+m.von+'–'+m.bis+' Wochen</div></div>'
+        +'</div>';
+    }).join('')}
+  if(up.length){html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text3)">Als nächstes (8 Wochen)</div>';
+    html+=up.map(m=>{
+      const key='ms_'+m.von+'_'+m.text.slice(0,20).replace(/\s/g,'_');
+      const done=!!state.milestones[key];
+      return'<div class="ms-item upcoming'+(done?' done':'')+'" onclick="toggleMilestone(\'' +key+ '\')">'
+        +'<div class="ms-check">'+(done?'&#x2714;':'')+'</div>'
+        +'<div><div class="ms-label">'+m.text+'</div>'
+        +'<div class="ms-age">'+m.von+'–'+m.bis+' Wochen · kommt noch</div></div>'
+        +'</div>';
+    }).join('')}
   if(weeks!==null){
     const ww=getWW(weeks);
     html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">Wake Windows</div>';
@@ -1198,7 +1297,7 @@ function saveGrowth(){
   state.growthLogs.push({id:Date.now(),date,weight:parseInt(document.getElementById('growth-weight').value)||0,height:parseFloat(document.getElementById('growth-height').value)||0,head:parseFloat(document.getElementById('growth-head').value)||0});
   state.growthLogs.sort((a,b)=>a.date.localeCompare(b.date));save('growthLogs');
   ['growth-weight','growth-height','growth-head'].forEach(id=>document.getElementById(id).value='');
-  renderGrowth();showToast('\u{1F4CF} Messung gespeichert');
+  renderGrowth();showToast('📏 Messung gespeichert');
 }
 function renderGrowth(){
   const logs=state.growthLogs,ctx=document.getElementById('chart-weight');
@@ -1206,9 +1305,9 @@ function renderGrowth(){
   if(logs.length)weightChart=new Chart(ctx,{type:'line',data:{labels:logs.map(l=>new Date(l.date).toLocaleDateString('de-DE',{day:'numeric',month:'short'})),datasets:[{data:logs.map(l=>l.weight),borderColor:'rgba(251,191,36,0.8)',backgroundColor:'rgba(251,191,36,0.1)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#fbbf24'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#888',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#888',font:{size:11}}}}}});
   const who=document.getElementById('who-content');
   if(logs.length&&state.profile.birthday){const l=logs[logs.length-1],w=getAgeWeeks(),med=w<=0?3500:w<=4?3500+w*200:w<=13?4300+(w-4)*220:w<=26?6280+(w-13)*170:8490+(w-26)*90,pct=Math.min(99,Math.max(1,Math.round(50+(l.weight-med)/(med*0.15)*25)));who.innerHTML='<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text2)">Gewicht ('+l.weight+'g)</span><span style="color:var(--amber)">'+pct+'. Perzentile</span></div><div class="percentile-bar"><div class="percentile-fill" style="width:'+pct+'%"></div></div><div style="font-size:12px;color:var(--text3)">Alter: '+w+' Wochen \u00b7 WHO-Referenz: ~'+Math.round(med/100)*100+'g</div><div style="font-size:12px;color:var(--text3);margin-top:8px">\u26a0\ufe0f Nur Orientierungswert \u2013 Kinderarzt hinzuziehen.</div></div>'}
-  else if(!logs.length)who.innerHTML='<div class="empty"><div class="empty-icon">\u{1F4CF}</div><p>Noch keine Messungen</p></div>';
+  else if(!logs.length)who.innerHTML='<div class="empty"><div class="empty-icon">📏</div><p>Noch keine Messungen</p></div>';
   else who.innerHTML='<div style="font-size:13px;color:var(--text3)">Geburtsdatum im Profil eintragen f\u00fcr Perzentilen.</div>';
-  document.getElementById('growth-list').innerHTML=!logs.length?'<div class="empty"><div class="empty-icon">\u{1F4CA}</div><p>Noch keine Messungen</p></div>':[...logs].reverse().map(l=>'<div class="session-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0"></div><div class="session-info"><div class="session-title">'+new Date(l.date).toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'})+'</div><div class="session-sub">'+(l.weight?l.weight+'g':'')+(l.height?' \u00b7 '+l.height+'cm':'')+(l.head?' \u00b7 KU: '+l.head+'cm':'')+(l.note?' \u00b7 '+l.note:'')+'</div></div><button class="delete-btn" onclick="deleteGrowth(\''+l.id+'\')">&#x2715;</button></div>').join('');
+  document.getElementById('growth-list').innerHTML=!logs.length?'<div class="empty"><div class="empty-icon">📊</div><p>Noch keine Messungen</p></div>':[...logs].reverse().map(l=>'<div class="session-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0"></div><div class="session-info"><div class="session-title">'+new Date(l.date).toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'})+'</div><div class="session-sub">'+(l.weight?l.weight+'g':'')+(l.height?' \u00b7 '+l.height+'cm':'')+(l.head?' \u00b7 KU: '+l.head+'cm':'')+(l.note?' \u00b7 '+l.note:'')+'</div></div><button class="delete-btn" onclick="deleteGrowth(\''+l.id+'\')">&#x2715;</button></div>').join('');
 }
 function deleteGrowth(id){state.growthLogs=state.growthLogs.filter(l=>l.id!=id);save('growthLogs');renderGrowth();showToast('Gel\u00f6scht')}
 
@@ -1271,7 +1370,7 @@ function histSaveGrowth(){
 // EXPORT / RESET
 function exportData(){
   const blob=new Blob([JSON.stringify({profile:state.profile,sleepSessions:state.sleepSessions,feedLogs:state.feedLogs,diaperLogs:state.diaperLogs,growthLogs:state.growthLogs,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='babyschlaf-export-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);showToast('\u{1F4E5} Export gestartet');
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='babyschlaf-export-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);showToast('📥 Export gestartet');
 }
 function confirmReset(){if(confirm('Wirklich alle Daten l\u00f6schen?')){localStorage.clear();location.reload()}}
 
