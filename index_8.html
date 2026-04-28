@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OctoRest">
+<meta name="theme-color" content="#1a1a2e">
+<title>OctoRest</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0f0f1a;
+  --bg2: #1a1a2e;
+  --bg3: #22223a;
+  --card: #1e1e32;
+  --border: rgba(255,255,255,0.08);
+  --text: #f0f0ff;
+  --text2: rgba(240,240,255,0.55);
+  --text3: rgba(240,240,255,0.3);
+  --accent: #7c6af7;
+  --accent2: #a78bfa;
+  --teal: #2dd4bf;
+  --amber: #fbbf24;
+  --rose: #fb7185;
+  --green: #34d399;
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 100px;
+}
+.serif { font-family: 'DM Serif Display', serif; }
+
+/* Nav */
+.nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex; z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 12px 8px; cursor: pointer;
+  background: none; border: none; color: var(--text3);
+  font-family: 'DM Sans', sans-serif; font-size: 11px;
+  transition: color 0.2s;
+}
+.nav-btn.active { color: var(--accent2); }
+.nav-icon { font-size: 22px; line-height: 1; }
+
+/* Pages */
+.page { display: none; padding: 20px 16px; }
+.page.active { display: block; }
+
+/* Header */
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 28px; font-weight: 300; letter-spacing: -0.5px; }
+.page-header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 12px;
+}
+.card-sm { padding: 14px; }
+
+/* Sleep button */
+.sleep-center{display:flex;flex-direction:column;align-items:center;padding:24px 0}
+.octo-wrap{position:relative;width:220px;height:220px;cursor:pointer;user-select:none}
+.octo-wrap svg{position:absolute;top:0;left:0;width:100%;height:100%}
+.octo-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;background:var(--card);border:2px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.3s ease;z-index:2}
+.octo-btn.sleeping{border-color:var(--accent);background:rgba(124,106,247,0.12);animation:octo-pulse 3s ease-in-out infinite}
+@keyframes octo-pulse{0%,100%{box-shadow:0 0 0 0 rgba(124,106,247,0.3)}50%{box-shadow:0 0 0 12px rgba(124,106,247,0)}}
+.octo-emoji{font-size:40px;line-height:1}
+.octo-label{font-size:12px;font-weight:500;color:var(--text2);margin-top:4px}
+.sleep-ring{display:none}
+.sleep-emoji { font-size: 52px; line-height: 1; margin-bottom: 6px; }
+.sleep-label { font-size: 15px; font-weight: 500; color: var(--text2); }
+.sleep-timer {
+  font-size: 42px; font-weight: 300; letter-spacing: 4px;
+  color: var(--accent2); margin: 20px 0 8px; font-variant-numeric: tabular-nums;
+}
+.sleep-since { font-size: 13px; color: var(--text3); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 50px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+  cursor: pointer; border: none; transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:active { transform: scale(0.97); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:active { transform: scale(0.97); background: var(--bg3); }
+.btn-danger { background: transparent; border: 1px solid var(--rose); color: var(--rose); }
+
+/* Stats grid */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+}
+.stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.stat-value { font-size: 22px; font-weight: 500; }
+.stat-value.accent { color: var(--accent2); }
+.stat-value.teal { color: var(--teal); }
+.stat-value.amber { color: var(--amber); }
+.stat-value.green { color: var(--green); }
+
+/* Session list */
+.session-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.session-item:last-child { border-bottom: none; }
+.session-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0;
+}
+.session-dot.feed { background: var(--teal); }
+.session-info { flex: 1; }
+.session-title { font-size: 14px; font-weight: 500; }
+.session-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.session-dur { font-size: 14px; font-weight: 500; color: var(--text2); }
+.delete-btn {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  padding: 4px; font-size: 16px; border-radius: 6px;
+  transition: color 0.2s;
+}
+.delete-btn:hover { color: var(--rose); }
+
+/* Form */
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; color: var(--text2); margin-bottom: 8px; display: block; }
+.form-input {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+  transition: border-color 0.2s;
+}
+.form-input:focus { outline: none; border-color: var(--accent); }
+.form-select {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+  appearance: none;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Chart container */
+.chart-wrap { position: relative; height: 200px; margin: 8px 0; }
+
+/* Tabs */
+.tabs { display: flex; background: var(--bg3); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 20px; }
+.tab {
+  flex: 1; text-align: center; padding: 9px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text3);
+  transition: all 0.2s; background: none; border: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.tab.active { background: var(--card); color: var(--text); }
+
+/* Badge */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+}
+.badge-accent { background: rgba(124,106,247,0.2); color: var(--accent2); }
+.badge-teal { background: rgba(45,212,191,0.2); color: var(--teal); }
+.badge-amber { background: rgba(251,191,36,0.2); color: var(--amber); }
+
+/* Profile */
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 16px;
+}
+
+/* WHO percentile */
+.percentile-bar {
+  height: 8px; background: var(--bg3); border-radius: 4px;
+  overflow: hidden; margin: 8px 0;
+}
+.percentile-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--teal), var(--accent));
+  transition: width 0.5s ease;
+}
+
+/* Insights */
+.insight {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px; background: var(--bg3); border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+.insight-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.insight-text { font-size: 14px; line-height: 1.5; color: var(--text2); }
+.insight-text strong { color: var(--text); }
+
+/* Empty state */
+.empty { text-align: center; padding: 40px 20px; color: var(--text3); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty p { font-size: 14px; }
+
+/* Divider */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+/* Toggle row */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+.toggle-row label { font-size: 15px; }
+input[type=range] { accent-color: var(--accent); }
+
+/* Notification */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
+  background: var(--card); border: 1px solid var(--border); border-radius: 50px;
+  padding: 10px 20px; font-size: 14px; font-weight: 500;
+  transition: transform 0.3s ease; z-index: 200; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Loading */
+.spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* Sleep categories */
+.sleep-cat-badge{font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;margin-top:4px}
+.cat-nap{background:rgba(45,212,191,0.15)}.cat-sleep{background:rgba(124,106,247,0.15)}.cat-night{background:rgba(30,30,80,0.6)}.cat-feed{background:rgba(251,191,36,0.15)}
+.session-cat{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.mood-row{display:flex;gap:8px;justify-content:center;margin:12px 0 4px}
+.mood-btn{width:56px;height:56px;border-radius:50%;background:var(--bg3);border:2px solid transparent;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.mood-btn:active{transform:scale(0.92)}
+.mood-legend{display:flex;gap:12px;justify-content:center;font-size:11px;color:var(--text3)}
+.btn-sm{padding:8px 16px;font-size:13px}
+.since-feed{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:50px;padding:6px 14px;font-size:13px;color:var(--text2);margin-bottom:8px}
+.since-feed.warn{border-color:var(--amber);color:var(--amber)}.since-feed.urgent{border-color:var(--rose);color:var(--rose)}
+.rec-card{background:var(--bg3);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;border:1px solid var(--border)}
+.rec-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.rec-icon{font-size:20px}.rec-title{font-size:14px;font-weight:500;flex:1}
+.rec-badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px}
+.badge-green{background:rgba(52,211,153,0.18);color:var(--green)}.badge-amber{background:rgba(251,191,36,0.18);color:var(--amber)}.badge-red{background:rgba(251,113,133,0.18);color:var(--rose)}.badge-blue{background:rgba(124,106,247,0.18);color:var(--accent2)}
+.bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:5px}
+.bar-track{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;position:relative}
+.bar-range{position:absolute;height:100%;background:rgba(124,106,247,0.2);border-radius:4px}
+.bar-fill{position:absolute;height:100%;border-radius:4px;transition:width 0.4s ease}
+.bar-fill.green{background:var(--green)}.bar-fill.amber{background:var(--amber)}.bar-fill.red{background:var(--rose)}.bar-fill.blue{background:var(--accent2)}
+.bar-marker{position:absolute;top:-3px;width:2px;height:14px;background:white;border-radius:1px;opacity:0.4}
+.rec-text{font-size:13px;color:var(--text2);line-height:1.6;margin-top:8px}
+.rec-text strong{color:var(--text)}
+.rec-sub{font-size:11px;color:var(--text3);margin-top:6px;font-style:italic}
+.milestone{background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+.milestone-dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);margin-top:5px;flex-shrink:0}
+.milestone-dot.upcoming{background:var(--text3)}
+.milestone-text{font-size:13px;color:var(--text2);line-height:1.5}
+.milestone-text strong{color:var(--text)}
+.disclaimer{font-size:11px;color:var(--text3);background:var(--bg3);border-radius:10px;padding:10px 12px;margin-top:16px;line-height:1.6}
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* PIN Screen */
+#pin-screen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 1000; padding: 32px;
+}
+#pin-screen.hidden { display: none; }
+.pin-title { font-family: 'DM Serif Display', serif; font-size: 32px; margin-bottom: 8px; text-align: center; }
+.pin-subtitle { font-size: 14px; color: var(--text3); margin-bottom: 40px; text-align: center; }
+.pin-dots { display: flex; gap: 16px; margin-bottom: 40px; }
+.pin-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--text3); background: transparent;
+  transition: all 0.2s;
+}
+.pin-dot.filled { background: var(--accent2); border-color: var(--accent2); }
+.pin-dot.error { background: var(--rose); border-color: var(--rose); animation: shake 0.4s ease; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.pin-grid {
+  display: grid; grid-template-columns: repeat(3, 72px);
+  gap: 12px;
+}
+.pin-key {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); font-size: 22px; font-weight: 400;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; user-select: none;
+}
+.pin-key:active { transform: scale(0.92); background: var(--bg3); }
+.pin-key.del { font-size: 18px; color: var(--text2); }
+.pin-key.empty { background: transparent; border-color: transparent; pointer-events: none; }
+.pin-error-msg { font-size: 13px; color: var(--rose); margin-top: 20px; min-height: 20px; }
+.pin-setup-note { font-size: 12px; color: var(--text3); margin-top: 16px; text-align: center; max-width: 260px; line-height: 1.6; }
+.pin-change-link { font-size: 13px; color: var(--accent2); cursor: pointer; margin-top: 24px; text-decoration: underline; }
+
+
+.octo-logo{display:flex;justify-content:center;margin-bottom:8px;animation:octo-bob 4s ease-in-out infinite}
+@keyframes octo-bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
+.octo-logo-sm{display:inline-flex;align-items:center;animation:octo-bob 4s ease-in-out infinite;cursor:default}
+.mood-timeline{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;margin:8px 0}
+.mood-hour{height:28px;border-radius:3px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:10px;cursor:default;position:relative}
+.mood-hour:hover .mood-hour-tip{display:block}
+.mood-hour-tip{display:none;position:absolute;bottom:32px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;white-space:nowrap;z-index:10;color:var(--text2)}
+.mood-day-row{margin-bottom:6px}
+.mood-day-label{font-size:11px;color:var(--text3);margin-bottom:3px}
+.mood-hour-labels{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;margin-bottom:8px}
+.mood-hour-lbl{font-size:9px;color:var(--text3);text-align:center}
+/* Widgets */
+.widget-section{margin-bottom:12px}
+.mood-bar{display:flex;gap:6px;justify-content:center;margin:10px 0}
+.mood-bar-btn{width:48px;height:48px;border-radius:50%;background:var(--bg3);border:2px solid transparent;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s}
+.mood-bar-btn:active{transform:scale(0.92)}
+.mood-bar-btn.sel{border-color:var(--accent2);background:rgba(167,139,250,0.18)}
+.mood-tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+.mood-tag{padding:5px 12px;border-radius:50px;background:var(--bg3);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.15s}
+.mood-tag.active{background:rgba(251,191,36,0.15);border-color:var(--amber);color:var(--amber)}
+.teething-btn{width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:500;font-family:"DM Sans",sans-serif;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);transition:all 0.15s}
+.teething-btn.active{background:rgba(251,191,36,0.12);border-color:var(--amber);color:var(--amber)}
+.widget-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.widget-toggle:last-child{border-bottom:none}
+.toggle-switch{width:44px;height:24px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);position:relative;cursor:pointer;transition:background 0.2s}
+.toggle-switch.on{background:var(--accent);border-color:var(--accent)}
+.toggle-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:white;transition:left 0.2s}
+.toggle-switch.on .toggle-knob{left:23px}
+/* Diaper buttons */
+.diaper-row{display:flex;gap:8px;margin:8px 0}
+.diaper-btn{flex:1;padding:12px 8px;border-radius:12px;font-family:"DM Sans",sans-serif;font-size:14px;font-weight:500;cursor:pointer;text-align:center;transition:all 0.15s;border:1px solid;background:var(--bg3);-webkit-appearance:none;appearance:none}
+.diaper-btn:active{transform:scale(0.97)}
+.diaper-btn.wet{background:rgba(45,212,191,0.12);border-color:rgba(45,212,191,0.3);color:var(--teal)}
+.diaper-btn.wet:active{background:rgba(45,212,191,0.25)}
+.diaper-btn.both{background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.3);color:var(--amber)}
+.diaper-btn.both:active{background:rgba(251,191,36,0.25)}
+.ms-timeline{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.ms-tl-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)}
+.ms-tl-item:last-child{border-bottom:none}
+.ms-tl-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px}
+.ms-tl-date{font-size:11px;color:var(--accent2);min-width:60px;margin-top:1px}
+.ms-tl-text{font-size:13px;color:var(--text2);line-height:1.4}
+.ms-tl-date-input{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--accent2);font-size:11px;width:80px;font-family:"DM Sans",sans-serif;padding:0;cursor:pointer}
+.ms-tl-date-input:focus{outline:none;border-bottom-color:var(--accent2)}
+.ms-tl-add{display:flex;gap:8px;align-items:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);flex-wrap:wrap}
+.ms-tl-add-label{font-size:12px;color:var(--text3);margin-bottom:4px}
+
+/* Milestone checklist */
+.ms-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:6px;cursor:pointer;transition:background 0.15s;background:var(--bg3);border:1px solid var(--border)}
+.ms-item:active{transform:scale(0.99)}
+.ms-item.done{background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.25)}
+.ms-item.upcoming{opacity:0.65}
+.ms-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all 0.2s;font-size:13px}
+.ms-item.done .ms-check{background:var(--green);border-color:var(--green);color:white}
+.ms-item.upcoming .ms-check{border-color:var(--text3)}
+.ms-label{font-size:13px;color:var(--text2);line-height:1.5;flex:1}
+.ms-item.done .ms-label{color:var(--text3);text-decoration:line-through}
+.ms-age{font-size:11px;color:var(--text3);margin-top:2px}
+/* Wake Window */
+.ww-pill{display:inline-flex;align-items:center;gap:6px;border-radius:50px;padding:6px 14px;font-size:13px;font-weight:500;margin-bottom:4px;border:1px solid}
+.ww-ok{background:rgba(52,211,153,0.12);border-color:var(--green);color:var(--green)}
+.ww-warn{background:rgba(251,191,36,0.12);border-color:var(--amber);color:var(--amber)}
+.ww-over{background:rgba(251,113,133,0.12);border-color:var(--rose);color:var(--rose)}
+.ww-idle{background:var(--bg3);border-color:var(--border);color:var(--text3)}
+.ww-bar-wrap{width:100%;max-width:260px;margin:6px auto 0}
+.ww-bar-track{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;position:relative}
+.ww-bar-fill{height:100%;border-radius:3px;transition:width 1s linear}
+.ww-bar-fill.ok{background:var(--green)}.ww-bar-fill.warn{background:var(--amber)}.ww-bar-fill.over{background:var(--rose)}.ww-bar-fill.idle{background:var(--border)}
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- PAGE: Home -->
+<div class="page active" id="page-home">
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div id="home-octo" class="octo-logo-sm" style="display:inline-flex;align-items:center;"></div>
+      <div>
+        <h1 class="serif" id="home-greeting">Guten Abend</h1>
+        <p id="home-babyname">Lade...</p>
+      </div>
+    </div>
+    <div id="home-date" style="font-size:13px;color:var(--text3);text-align:right;margin-top:6px;"></div>
+  </div>
+
+  <div id="since-feed-wrap"></div>
+
+  <!-- Sleep button -->
+  <div class="sleep-center">
+    <!-- Octo 24h Ring -->
+    <div class="octo-wrap" id="octo-wrap" onclick="toggleSleep()">
+      <svg id="octo-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background ring track -->
+        <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
+        <!-- Sleep segments drawn by JS -->
+        <g id="octo-segments"></g>
+        <!-- Active sleep arc -->
+        <path id="octo-active" fill="none" stroke="#7c6af7" stroke-width="10" stroke-linecap="round" opacity="0.9"/>
+        <!-- Time marker dot -->
+        <circle id="octo-dot" r="5" fill="#2dd4bf"/>
+        <circle id="octo-dot-glow" r="8" fill="rgba(45,212,191,0.3)"/>
+      </svg>
+      <!-- Center button -->
+      <div class="octo-btn" id="sleep-ring">
+        <div class="octo-emoji" id="sleep-emoji">🌙</div>
+        <div class="octo-label" id="sleep-label">Wach</div>
+        <div id="sleep-cat-badge" style="display:none;font-size:10px;font-weight:600;padding:1px 8px;border-radius:10px;margin-top:2px"></div>
+      </div>
+    </div>
+    <div class="sleep-timer" id="sleep-timer" style="display:none;font-size:36px;font-weight:300;letter-spacing:4px;color:var(--accent2);margin:8px 0;font-variant-numeric:tabular-nums">00:00:00</div>
+    <div class="sleep-since" id="sleep-since" style="font-size:12px;color:var(--text3)"></div>
+    <div id="wake-window-wrap" style="margin-top:8px;display:flex;flex-direction:column;align-items:center;"></div>
+    <div style="margin-top:12px;display:flex;gap:10px;" id="sleep-actions">
+      <button class="btn btn-primary" onclick="toggleSleep()" id="main-btn">Schlafen starten</button>
+    </div>
+  </div>
+
+
+
+  <!-- Voice control -->
+  <div style="display:flex;flex-direction:column;align-items:center;margin:-8px 0 16px">
+    <div class="voice-header">
+      <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Sprachsteuerung">🎤</button>
+      <div style="font-size:12px;color:var(--text3)">Sprachsteuerung</div>
+    </div>
+    <div class="voice-feedback" id="voice-feedback"></div>
+  </div>
+  <!-- Mood picker -->
+  <div id="mood-picker" style="display:none;" class="card">
+    <div style="font-size:14px;font-weight:500;text-align:center;margin-bottom:12px;">Wie ist das Baby aufgewacht?</div>
+    <div class="mood-row">
+      <button class="mood-btn" onclick="selectMood('&#x1F60A;')">&#x1F60A;</button>
+      <button class="mood-btn" onclick="selectMood('&#x1F610;')">&#x1F610;</button>
+      <button class="mood-btn" onclick="selectMood('&#x1F622;')">&#x1F622;</button>
+    </div>
+    <div class="mood-legend"><span>Ausgeruht</span><span>Normal</span><span>Unruhig</span></div>
+    <div style="text-align:center;margin-top:12px;"><button class="btn btn-outline btn-sm" onclick="skipMood()">&#xDCDC;berspringen</button></div>
+  </div>
+  <!-- Mood widget (toggled) -->
+  <div id="widget-mood" class="card widget-section">
+    <div style="font-size:14px;font-weight:500;margin-bottom:8px;">Stimmung heute</div>
+    <div class="mood-bar">
+      <button class="mood-bar-btn" onclick="logMood('&#x1F62D;')">&#x1F62D;</button>
+      <button class="mood-bar-btn" onclick="logMood('&#x1F641;')">&#x1F641;</button>
+      <button class="mood-bar-btn" onclick="logMood('&#x1F610;')">&#x1F610;</button>
+      <button class="mood-bar-btn" onclick="logMood('&#x1F642;')">&#x1F642;</button>
+      <button class="mood-bar-btn" onclick="logMood('&#x1F604;')">&#x1F604;</button>
+    </div>
+    <div class="mood-tags">
+      <span class="mood-tag" onclick="toggleMoodTag(this,'Zahnt')">&#x1F9B7; Zahnt</span>
+      <span class="mood-tag" onclick="toggleMoodTag(this,'Schub')">&#x1F4C8; Schub</span>
+      <span class="mood-tag" onclick="toggleMoodTag(this,'Impfung')">&#x1F489; Impfung</span>
+      <span class="mood-tag" onclick="toggleMoodTag(this,'Krank')">&#x1F912; Krank</span>
+    </div>
+    <div id="today-mood-display" style="text-align:center;font-size:13px;color:var(--text3);margin-top:4px"></div>
+  </div>
+
+  <!-- Teething widget (toggled) -->
+  <div id="widget-teething" style="display:none" class="card widget-section">
+    <div style="font-size:14px;font-weight:500;margin-bottom:10px;">&#x1F9B7; Zahnen</div>
+    <button class="teething-btn" id="teething-btn" onclick="toggleTeething()">Heute kein Zahnen</button>
+    <div id="teething-streak" style="font-size:12px;color:var(--text3);text-align:center;margin-top:8px"></div>
+  </div>
+
+  <!-- Today stats -->
+  <div class="card">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Heute</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Schlaf gesamt</div>
+        <div class="stat-value accent" id="today-sleep">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Schlafphasen</div>
+        <div class="stat-value teal" id="today-phases">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Mahlzeiten</div>
+        <div class="stat-value amber" id="today-feeds">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Getrunken</div>
+        <div class="stat-value green" id="today-ml">— ml</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-top:4px;margin-bottom:8px;">Nach Kategorie</div>
+    <div style="display:flex;gap:8px;" id="today-cat-breakdown"></div>
+  </div>
+
+  <!-- Quick feed log -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:15px;font-weight:500;">Mahlzeit eintragen</div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">Schnellauswahl (ml)</div>
+    <div class="ml-quick">
+      <button class="ml-btn" onclick="setFeedMl(30)">30</button>
+      <button class="ml-btn" onclick="setFeedMl(60)">60</button>
+      <button class="ml-btn" onclick="setFeedMl(80)">80</button>
+      <button class="ml-btn" onclick="setFeedMl(100)">100</button>
+      <button class="ml-btn" onclick="setFeedMl(120)">120</button>
+      <button class="ml-btn" onclick="setFeedMl(130)">130</button>
+      <button class="ml-btn" onclick="setFeedMl(150)">150</button>
+      <button class="ml-btn" onclick="setFeedMl(170)">170</button>
+      <button class="ml-btn" onclick="setFeedMl(180)">180</button>
+      <button class="ml-btn" onclick="setFeedMl(200)">200</button>
+      <button class="ml-btn" onclick="setFeedMl(210)">210</button>
+      <button class="ml-btn" onclick="setFeedMl(230)">230</button>
+      <button class="ml-btn" onclick="setFeedMl(250)">250</button>
+      <button class="ml-btn" onclick="setFeedMl(260)">260</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Menge (ml)</label>
+        <input class="form-input" type="number" id="feed-ml" placeholder="120" min="0" max="500">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Art</label>
+        <select class="form-select" id="feed-type">
+          <option value="Muttermilch">Muttermilch</option>
+          <option value="Flasche">Flasche</option>
+          <option value="Beikost">Beikost</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:0;margin-top:10px;"><label class="form-label">Uhrzeit <span style="color:var(--text3);font-weight:400">(leer = jetzt)</span></label><input class="form-input" type="time" id="feed-time" style="font-size:15px;"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:12px;justify-content:center;" onclick="logFeed()">Eintragen</button>
+  </div>
+
+
+  <!-- Windel -->
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:12px;">Windel wechseln</div>
+    <div class="form-group" style="margin-bottom:10px;">
+      <label class="form-label">Uhrzeit <span style="color:var(--text3);font-weight:400">(leer = jetzt)</span></label>
+      <input class="form-input" type="time" id="diaper-time" style="font-size:15px;">
+    </div>
+    <div class="diaper-row">
+      <button class="diaper-btn wet" onclick="logDiaper('wet')">&#x1F4A7; Nass</button>
+      <button class="diaper-btn both" onclick="logDiaper('both')">&#x1F4A9; Beides</button>
+    </div>
+    <div id="today-diapers" style="font-size:12px;color:var(--text3);margin-top:8px;text-align:center"></div>
+  </div>
+  <!-- Recent log -->
+  <div class="card">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Letzte Einträge</div>
+    <div id="recent-log">
+      <div class="empty"><div class="empty-icon">🐙</div><p>Noch keine Einträge heute</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: Statistiken -->
+<div class="page" id="page-stats">
+  <div class="page-header">
+    <h1 class="serif">Auswertung</h1>
+    <p>Schlaf & Ernährung im Überblick</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchStatTab('sleep')">Schlaf</button>
+    <button class="tab" onclick="switchStatTab('feed')">Ernährung</button>
+    <button class="tab" onclick="switchStatTab('growth')">Wachstum</button>
+    <button class="tab" onclick="switchStatTab('insights')">Empfehlungen</button>
+  </div>
+
+  <!-- Sleep tab -->
+  <div id="stat-sleep">
+    <div class="stats-grid" style="margin-bottom:16px;">
+      <div class="stat-card">
+        <div class="stat-label">Ø Schlaf / Tag</div>
+        <div class="stat-value accent" id="avg-sleep-day">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Längste Phase</div>
+        <div class="stat-value teal" id="longest-phase">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Phasen / Tag</div>
+        <div class="stat-value amber" id="avg-phases">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Erfasste Tage</div>
+        <div class="stat-value green" id="total-days">—</div>
+      </div>
+    </div>
+    <div class="card" id="cat-stats-card">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Nach Kategorie (7 Tage)</div>
+      <div id="cat-stats"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Stimmung (Aufwachen + Tagesbarometer)</div>
+      <div id="mood-stats"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Stimmungs-Timeline (7 Tage)</div>
+      <div class="mood-hour-labels" id="mood-hour-labels"></div>
+      <div id="mood-timeline-grid"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">Schlaf letzte 7 Tage (Stunden)</div>
+      <div class="chart-wrap"><canvas id="chart-sleep"></canvas></div>
+    </div>
+    <div class="card" id="sleep-history">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Alle Schlafphasen</div>
+      <div id="sleep-list"></div>
+    </div>
+  </div>
+
+  <!-- Feed tab -->
+  <div id="stat-feed" style="display:none;">
+    <div class="stats-grid" style="margin-bottom:16px;">
+      <div class="stat-card">
+        <div class="stat-label">Ø ml / Tag</div>
+        <div class="stat-value accent" id="avg-ml-day">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Mahlzeiten / Tag</div>
+        <div class="stat-value teal" id="avg-feeds-day">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">Trinkmenge letzte 7 Tage (ml)</div>
+      <div class="chart-wrap"><canvas id="chart-feed"></canvas></div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Letzte Mahlzeiten</div>
+      <div id="feed-list"></div>
+    </div>
+  </div>
+
+  <!-- Insights tab -->
+  <div id="stat-insights" style="display:none;">
+    <div id="insights-content"></div>
+  </div>
+  <div id="stat-growth" style="display:none;">
+<div class="page-header">
+    <h1 class="serif">Wachstum</h1>
+    <p>Gewicht & Größe verfolgen</p>
+  </div>
+
+  <!-- Add measurement -->
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:16px;">Neue Messung</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Datum</label>
+        <input class="form-input" type="date" id="growth-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Gewicht (g)</label>
+        <input class="form-input" type="number" id="growth-weight" placeholder="3500">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Größe (cm)</label>
+        <input class="form-input" type="number" id="growth-height" placeholder="50">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kopfumfang (cm)</label>
+        <input class="form-input" type="number" id="growth-head" placeholder="34">
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveGrowth()">Speichern</button>
+  </div>
+
+  <!-- Growth chart -->
+  <div class="card">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Gewichtsverlauf (g)</div>
+    <div class="chart-wrap"><canvas id="chart-weight"></canvas></div>
+  </div>
+
+  <!-- WHO percentile -->
+  <div class="card" id="who-card">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">WHO-Perzentile (aktuell)</div>
+    <div id="who-content">
+      <div class="empty"><div class="empty-icon">📏</div><p>Noch keine Messungen</p></div>
+    </div>
+  </div>
+
+  <!-- Growth history -->
+  <div class="card">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Messungen</div>
+    <div id="growth-list">
+      <div class="empty"><div class="empty-icon">📊</div><p>Noch keine Messungen eingetragen</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: Profil -->
+  </div>
+</div>
+
+<!-- PAGE: Wachstum -->
+<div class="page" id="page-profile">
+  <div class="page-header">
+    <h1 class="serif">Babyprofil</h1>
+    <p>Angaben zu eurem Baby</p>
+  </div>
+
+  <div style="text-align:center;margin-bottom:24px;">
+    <div class="profile-avatar">👶</div>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label class="form-label">Name des Babys</label>
+      <input class="form-input" type="text" id="profile-name" placeholder="z.B. Emma">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Geburtsdatum</label>
+      <input class="form-input" type="date" id="profile-birthday">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Geburtsgewicht (g)</label>
+        <input class="form-input" type="number" id="profile-birthweight" placeholder="3500">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Geburtsgröße (cm)</label>
+        <input class="form-input" type="number" id="profile-birthheight" placeholder="50">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Geschlecht</label>
+      <select class="form-select" id="profile-gender">
+        <option value="">Bitte wählen</option>
+        <option value="m">Männlich</option>
+        <option value="f">Weiblich</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveProfile()">Profil speichern</button>
+  </div>
+
+  <div class="card" id="age-card" style="display:none;">
+    <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;">Alter</div>
+    <div id="age-display"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:4px;">PIN ändern</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;">Neuen 4-stelligen PIN festlegen</div>
+    <button class="btn btn-outline" onclick="startPinChange()">PIN ändern</button>
+  </div>
+
+  <!-- Daten nachträglich einpflegen -->
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:4px;">Daten nachtr&#228;glich einpflegen</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:16px;">F&#252;r Daten von der Hebamme, U-Untersuchungen oder vergangene Tage</div>
+    <div style="margin-bottom:16px;">
+      <button class="hist-type-btn active" onclick="setHistType('sleep',this)">Schlaf</button>
+      <button class="hist-type-btn" onclick="setHistType('growth',this)">Wachstum</button>
+    </div>
+    <div id="hist-sleep" class="hist-fields show">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Einschlafen</label><input class="form-input" type="datetime-local" id="hist-sleep-start"></div>
+        <div class="form-group"><label class="form-label">Aufwachen</label><input class="form-input" type="datetime-local" id="hist-sleep-end"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="histSaveSleep()">Schlaf eintragen</button>
+    </div>
+    <div id="hist-growth" class="hist-fields">
+      <div class="form-group"><label class="form-label">Datum der Messung</label><input class="form-input" type="date" id="hist-growth-date"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Gewicht (g)</label><input class="form-input" type="number" id="hist-growth-weight" placeholder="3500"></div>
+        <div class="form-group"><label class="form-label">Gr&#246;&#223;e (cm)</label><input class="form-input" type="number" id="hist-growth-height" placeholder="50"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Kopfumfang (cm)</label><input class="form-input" type="number" id="hist-growth-head" placeholder="34"></div>
+        <div class="form-group"><label class="form-label">Notiz (optional)</label><input class="form-input" type="text" id="hist-growth-note" placeholder="z.B. U3"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="histSaveGrowth()">Messung eintragen</button>
+    </div>
+  </div>
+
+  <!-- Widget Konfigurator -->
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:4px;">&#x1F3A8; Home-Widgets</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:16px;">W&#228;hle was auf der Startseite angezeigt wird</div>
+    <div id="widget-config">
+      <div class="widget-toggle"><div><div style="font-size:14px;font-weight:500">&#x1F319; Schlaf-Monitor</div><div style="font-size:12px;color:var(--text3)">Ring, Timer, Wake Window</div></div><div class="toggle-switch on" id="wtoggle-sleep" onclick="toggleWidget('sleep')"><div class="toggle-knob"></div></div></div>
+      <div class="widget-toggle"><div><div style="font-size:14px;font-weight:500">&#x1F37C; Mahlzeit</div><div style="font-size:12px;color:var(--text3)">Schnelleingabe ml</div></div><div class="toggle-switch on" id="wtoggle-feed" onclick="toggleWidget('feed')"><div class="toggle-knob"></div></div></div>
+      <div class="widget-toggle"><div><div style="font-size:14px;font-weight:500">&#x1F4A7; Windel</div><div style="font-size:12px;color:var(--text3)">Nass / Beides</div></div><div class="toggle-switch on" id="wtoggle-diaper" onclick="toggleWidget('diaper')"><div class="toggle-knob"></div></div></div>
+      <div class="widget-toggle"><div><div style="font-size:14px;font-weight:500">&#x1F604; Stimmung</div><div style="font-size:12px;color:var(--text3)">Tages-Barometer + Tags</div></div><div class="toggle-switch on" id="wtoggle-mood" onclick="toggleWidget('mood')"><div class="toggle-knob"></div></div></div>
+      <div class="widget-toggle"><div><div style="font-size:14px;font-weight:500">&#x1F9B7; Zahnen</div><div style="font-size:12px;color:var(--text3)">Tages-Toggle</div></div><div class="toggle-switch" id="wtoggle-teething" onclick="toggleWidget('teething')"><div class="toggle-knob"></div></div></div>
+    </div>
+  </div>
+
+  <!-- Über die App -->
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:16px;">ℹ️ Über OctoRest</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-size:20px;flex-shrink:0">📱</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--text2)">Lokal &amp; privat</div><div style="font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5">Alle Daten bleiben ausschließlich auf diesem Gerät. Kein Server, keine Cloud, keine Anmeldung erforderlich.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-size:20px;flex-shrink:0">💾</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--text2)">Datensicherung wichtig!</div><div style="font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5">Wenn der Browser-Cache gelöscht wird, sind alle Daten weg. Bitte regelmäßig → <strong style="color:var(--text2)">Export herunterladen</strong> nutzen (z.B. wöchentlich).</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-size:20px;flex-shrink:0">🎤</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;color:var(--text2)">Sprachsteuerung</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5;margin-bottom:8px">Funktioniert in Chrome &amp; Android &middot; Mikrofon-Button auf der Startseite</div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;">
+            <div style="color:var(--accent2);font-weight:500">"Schlaf start"</div><div style="color:var(--text3)">oder: schlafen, gute Nacht</div>
+            <div style="color:var(--accent2);font-weight:500">"Schlaf stop"</div><div style="color:var(--text3)">oder: aufgewacht, wach, Ende</div>
+            <div style="color:var(--accent2);font-weight:500">"150 ml"</div><div style="color:var(--text3)">oder: 150 getrunken, gefüttert 120</div>
+            <div style="color:var(--accent2);font-weight:500">"Windel nass"</div><div style="color:var(--text3)">oder: gewickelt, nass, pipi</div>
+            <div style="color:var(--accent2);font-weight:500">"Windel beides"</div><div style="color:var(--text3)">oder: groß, kacka, beides</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-size:20px;flex-shrink:0">🔒</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--text2)">PIN-Schutz</div><div style="font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5">Die App sperrt sich nach 5 Minuten im Hintergrund automatisch. PIN kann jederzeit geändert werden.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-size:20px;flex-shrink:0">⚕️</div>
+        <div><div style="font-size:13px;font-weight:500;color:var(--text2)">Medizinischer Hinweis</div><div style="font-size:12px;color:var(--text3);margin-top:3px;line-height:1.5">Alle Richtwerte (WHO, Wake Windows) sind Orientierungswerte. Kein Ersatz für ärztliche Beratung.</div></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:16px;padding-top:12px;border-top:1px solid var(--border);text-align:center;">OctoRest · Open Source · Keine Werbung · Keine Tracker</div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:4px;">Daten exportieren</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;">Alle Daten als JSON-Datei herunterladen</div>
+    <button class="btn btn-outline" onclick="exportData()">Export herunterladen</button>
+  </div>
+
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:4px;">Daten importieren</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;">Backup-Datei (.json) wiederherstellen &ndash; bestehende Daten werden &uuml;berschrieben</div>
+    <label style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:50px;background:transparent;border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:500;cursor:pointer;">
+      &#x1F4C2; Datei w&auml;hlen
+      <input type="file" accept=".json" onchange="importData(event)" style="display:none">
+    </label>
+    <div id="import-status" style="font-size:13px;margin-top:10px;min-height:18px;"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;color:var(--rose);margin-bottom:4px;">Alle Daten löschen</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;">Setzt die App vollständig zurück</div>
+    <button class="btn btn-danger" onclick="confirmReset()">Zurücksetzen</button>
+  </div>
+</div>
+
+<!-- PIN Screen -->
+<div id="pin-screen">
+  <div id="pin-octo" class="octo-logo" style="display:flex;justify-content:center;"></div>
+  <div class="pin-title">OctoRest</div>
+  <div id="pin-info-box" class="pin-info" style="display:none;">
+    <div class="pin-info-title">Dein persönliches Baby-Tagebuch</div>
+    <div class="pin-info-row"><div class="pin-info-icon">📱</div><div class="pin-info-text"><strong>Lokal &amp; privat</strong> – Alle Daten bleiben auf diesem Gerät. Kein Server, keine Cloud, keine Anmeldung.</div></div>
+    <div class="pin-info-row"><div class="pin-info-icon">💾</div><div class="pin-info-text"><strong>Datensicherung</strong> – Daten können unter Profil → Export als JSON-Datei gesichert werden. Empfohlen: wöchentlich oder nach wichtigen Messungen.</div></div>
+    <div class="pin-info-row"><div class="pin-info-icon">&#x26A0;</div><div class="pin-info-text"><strong>Browser-Daten löschen</strong> löscht auch alle App-Daten. Bitte regelmäßig exportieren!</div></div>
+    <div class="pin-info-row"><div class="pin-info-icon">🎤</div><div class="pin-info-text"><strong>Sprachsteuerung</strong> funktioniert in Chrome &amp; Android mit dem Mikrofon-Button auf der Startseite.</div></div>
+  </div>
+  <div class="pin-subtitle" id="pin-subtitle">PIN eingeben</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="dot-0"></div>
+    <div class="pin-dot" id="dot-1"></div>
+    <div class="pin-dot" id="dot-2"></div>
+    <div class="pin-dot" id="dot-3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-key" onclick="pinKey('1')">1</button>
+    <button class="pin-key" onclick="pinKey('2')">2</button>
+    <button class="pin-key" onclick="pinKey('3')">3</button>
+    <button class="pin-key" onclick="pinKey('4')">4</button>
+    <button class="pin-key" onclick="pinKey('5')">5</button>
+    <button class="pin-key" onclick="pinKey('6')">6</button>
+    <button class="pin-key" onclick="pinKey('7')">7</button>
+    <button class="pin-key" onclick="pinKey('8')">8</button>
+    <button class="pin-key" onclick="pinKey('9')">9</button>
+    <button class="pin-key empty"></button>
+    <button class="pin-key" onclick="pinKey('0')">0</button>
+    <button class="pin-key del" onclick="pinDelete()">⌫</button>
+  </div>
+  <div class="pin-error-msg" id="pin-error"></div>
+  <div class="pin-setup-note" id="pin-setup-note" style="display:none;">
+    Beim ersten Start einen 4-stelligen PIN wählen.<br>Diesen PIN gut merken!
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('home',this)">
+    <span class="nav-icon">🏠</span>Home
+  </button>
+  <button class="nav-btn" onclick="showPage('stats',this)">
+    <span class="nav-icon">📊</span>Statistik
+  </button>
+  <button class="nav-btn" onclick="showPage('profile',this)">
+    <span class="nav-icon">&#x1F419;</span>Profil
+  </button>
+</nav>
+
+<script>
+// DATA
+const DB={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+let state={
+  profile:DB.get('profile',{}),
+  milestones:DB.get('milestones',{}),
+  widgets:DB.get('widgets',{sleep:true,feed:true,diaper:true,mood:true,teething:false}),
+  moodLogs:DB.get('moodLogs',[]),
+  teethingDays:DB.get('teethingDays',{}),
+  sleepSessions:DB.get('sleepSessions',[]),
+  feedLogs:DB.get('feedLogs',[]),
+  diaperLogs:DB.get('diaperLogs',[]),
+  growthLogs:DB.get('growthLogs',[]),
+  activeSleep:DB.get('activeSleep',null)
+};
+function save(k){DB.set(k,state[k])}
+
+// SLEEP CATEGORIES
+function categorizeSleep(startTs,durationMs){
+  const mins=durationMs/60000,hour=new Date(startTs).getHours();
+  if(mins<=30)return'nap';
+  if(hour>=19||hour<7)return'night';
+  return'sleep';
+}
+const CAT={
+  nap:{label:'Nickerchen',emoji:'💤',color:'var(--teal)',cls:'cat-nap'},
+  sleep:{label:'Schl\u00e4fchen',emoji:'😴',color:'var(--accent2)',cls:'cat-sleep'},
+  night:{label:'Nachtschlaf',emoji:'🌙',color:'#a0a8ff',cls:'cat-night'}
+};
+
+// UTILS
+function fmt(ms){const m=Math.floor(ms/60000),h=Math.floor(m/60);return h>0?h+'h '+(m%60)+'min':(m%60)+'min'}
+function fmtTimer(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);return String(h).padStart(2,'0')+':'+String(m%60).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function fmtDate(ts){return new Date(ts).toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'})}
+function fmtTime(ts){return new Date(ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}
+function todayStart(){const d=new Date();d.setHours(0,0,0,0);return d.getTime()}
+function dayStart(ts){const d=new Date(ts);d.setHours(0,0,0,0);return d.getTime()}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
+function getAgeWeeks(){if(!state.profile.birthday)return null;return Math.floor((Date.now()-new Date(state.profile.birthday).getTime())/(7*24*3600000))}
+function localDT(ts){const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+
+// NAV
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='stats')renderStats();
+  if(name==='growth')renderGrowth();
+  if(name==='profile')renderProfile();
+}
+
+// SLEEP
+let timerInterval=null,pendingSessionId=null;
+function toggleSleep(){state.activeSleep?stopSleep():startSleep()}
+function startSleep(){
+  if(state.activeSleep)return;
+  state.activeSleep={start:Date.now()};save('activeSleep');
+  updateSleepUI();showToast('💤 Schlaf gestartet');
+}
+function stopSleep(){
+  if(!state.activeSleep)return;
+  const dur=Date.now()-state.activeSleep.start;
+  const sess={id:Date.now(),start:state.activeSleep.start,end:Date.now(),duration:dur,category:categorizeSleep(state.activeSleep.start,dur),mood:null};
+  state.sleepSessions.unshift(sess);state.activeSleep=null;pendingSessionId=sess.id;
+  save('sleepSessions');save('activeSleep');
+  updateSleepUI();updateHomeStats();updateRecentLog();updateSinceFeed();drawOctoRing();
+  document.getElementById('mood-picker').style.display='block';
+  showToast('\u2705 '+CAT[sess.category].label+' \u2013 '+fmt(sess.duration));
+}
+function selectMood(emoji){
+  if(pendingSessionId){const i=state.sleepSessions.findIndex(s=>s.id===pendingSessionId);if(i>=0){state.sleepSessions[i].mood=emoji;save('sleepSessions')}}
+  document.getElementById('mood-picker').style.display='none';pendingSessionId=null;updateRecentLog();
+}
+function skipMood(){document.getElementById('mood-picker').style.display='none';pendingSessionId=null}
+
+
+// ===================== OCTO 24H RING =====================
+function tsToAngle(ts){
+  const d=new Date(ts),h=d.getHours(),m=d.getMinutes(),s=d.getSeconds();
+  return((h*3600+m*60+s)/86400)*360-90; // -90 = 0h at top
+}
+function polarToXY(angleDeg,r,cx,cy){
+  const rad=angleDeg*Math.PI/180;
+  return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)};
+}
+function arcPath(startAngle,endAngle,r,cx,cy){
+  // Clamp to max 359.9 degrees to avoid full circle bug
+  let span=endAngle-startAngle;
+  if(span<=0)span+=360;
+  if(span>359.9)span=359.9;
+  const s=polarToXY(startAngle,r,cx,cy);
+  const e=polarToXY(startAngle+span,r,cx,cy);
+  const large=span>180?1:0;
+  return'M '+s.x+' '+s.y+' A '+r+' '+r+' 0 '+large+' 1 '+e.x+' '+e.y;
+}
+
+function drawOctoRing(){
+  const svg=document.getElementById('octo-svg');
+  if(!svg)return;
+  const segsEl=document.getElementById('octo-segments');
+  const activeEl=document.getElementById('octo-active');
+  const dotEl=document.getElementById('octo-dot');
+  const glowEl=document.getElementById('octo-dot-glow');
+  if(!segsEl||!activeEl||!dotEl)return;
+
+  const cx=110,cy=110,r=100,now=Date.now();
+  const dayStart=new Date();dayStart.setHours(0,0,0,0);
+  const dayStartTs=dayStart.getTime();
+
+  // Draw completed sleep segments for today
+  const todaySessions=state.sleepSessions.filter(s=>s.end>=dayStartTs&&s.start<=now);
+  segsEl.innerHTML=todaySessions.map(s=>{
+    const start=Math.max(s.start,dayStartTs);
+    const end=Math.min(s.end,now);
+    if(end<=start)return'';
+    const sa=tsToAngle(start),ea=tsToAngle(end);
+    const cat=s.category||'sleep';
+    const color=cat==='night'?'#5b6af7':cat==='nap'?'#2dd4bf':'#a78bfa';
+    return'<path d="'+arcPath(sa,ea,r,cx,cy)+'" fill="none" stroke="'+color+'" stroke-width="10" stroke-linecap="round" opacity="0.85"/>';
+  }).join('');
+
+  // Draw active sleep arc
+  if(state.activeSleep){
+    const start=Math.max(state.activeSleep.start,dayStartTs);
+    const sa=tsToAngle(start),ea=tsToAngle(now);
+    activeEl.setAttribute('d',arcPath(sa,ea,r,cx,cy));
+    activeEl.style.display='block';
+  } else {
+    activeEl.style.display='none';
+  }
+
+  // Move time dot
+  const nowAngle=tsToAngle(now);
+  const dp=polarToXY(nowAngle,r,cx,cy);
+  dotEl.setAttribute('cx',dp.x);dotEl.setAttribute('cy',dp.y);
+  glowEl.setAttribute('cx',dp.x);glowEl.setAttribute('cy',dp.y);
+}
+
+function updateSleepUI(){
+  const ring=document.getElementById('sleep-ring'),emoji=document.getElementById('sleep-emoji'),label=document.getElementById('sleep-label'),badge=document.getElementById('sleep-cat-badge'),timer=document.getElementById('sleep-timer'),since=document.getElementById('sleep-since'),btn=document.getElementById('main-btn');
+  clearInterval(timerInterval);
+  if(state.activeSleep){
+    const dur=Date.now()-state.activeSleep.start,cat=categorizeSleep(state.activeSleep.start,dur),m=CAT[cat];
+    ring.classList.add('sleeping');emoji.textContent=m.emoji;label.textContent=m.label;
+    badge.style.display='block';badge.textContent=m.emoji+' '+m.label;badge.style.color=m.color;badge.style.background='rgba(124,106,247,0.15)';
+    timer.style.display='block';since.textContent='Eingeschlafen um '+fmtTime(state.activeSleep.start);
+    btn.textContent='Aufwachen';btn.style.background='var(--rose)';
+    timerInterval=setInterval(()=>{
+      const d=Date.now()-state.activeSleep.start,lc=categorizeSleep(state.activeSleep.start,d),lm=CAT[lc];
+      timer.textContent=fmtTimer(d);emoji.textContent=lm.emoji;label.textContent=lm.label;
+      badge.textContent=lm.emoji+' '+lm.label;badge.style.color=lm.color;
+    },1000);
+    timer.textContent=fmtTimer(dur);
+  }else{
+    ring.classList.remove('sleeping');emoji.textContent='🌙';label.textContent='Wach';
+    badge.style.display='none';timer.style.display='none';since.textContent='';
+    btn.textContent='Schlafen starten';btn.style.background='var(--accent)';
+  }
+  updateWakeWindow();
+  drawOctoRing();
+}
+
+// FEED
+function logFeed(){
+  const ml=parseInt(document.getElementById('feed-ml').value)||0,type=document.getElementById('feed-type').value;
+  if(ml<=0){showToast('\u26a0\ufe0f Bitte Menge eingeben');return}
+  const timeEl=document.getElementById('feed-time');
+  let ts=Date.now();
+  if(timeEl&&timeEl.value){const[h,m]=timeEl.value.split(':');const d=new Date();d.setHours(parseInt(h),parseInt(m),0,0);ts=d.getTime()}
+  state.feedLogs.unshift({id:Date.now(),ts,ml,type});save('feedLogs');
+  document.getElementById('feed-ml').value='';
+  if(timeEl)timeEl.value='';document.querySelectorAll('.ml-btn').forEach(b=>b.classList.remove('selected'));
+  updateHomeStats();updateRecentLog();updateSinceFeed();
+  showToast('🍼 '+ml+' ml eingetragen');
+}
+
+
+function setFeedMl(v){
+  document.getElementById('feed-ml').value=v;
+  document.querySelectorAll('.ml-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.textContent)===v));
+}
+// DIAPER
+function logDiaper(type){
+  const timeEl=document.getElementById('diaper-time');
+  let ts=Date.now();
+  if(timeEl&&timeEl.value){const[h,m]=timeEl.value.split(':');const d=new Date();d.setHours(parseInt(h),parseInt(m),0,0);ts=d.getTime()}
+  state.diaperLogs.unshift({id:Date.now(),ts,type});save('diaperLogs');
+  if(timeEl)timeEl.value='';
+  updateHomeStats();updateRecentLog();
+  showToast(type==='wet'?'💧 Nasse Windel eingetragen':'💩 Windel (beides) eingetragen');
+}
+
+// SINCE LAST FEED
+function updateSinceFeed(){
+  const wrap=document.getElementById('since-feed-wrap');if(!wrap)return;
+  if(!state.feedLogs.length){wrap.innerHTML='';return}
+  const mins=Math.floor((Date.now()-state.feedLogs[0].ts)/60000),h=Math.floor(mins/60),m=mins%60;
+  const txt=h>0?h+'h '+m+'min':m+' min';
+  let cls='since-feed';if(mins>180)cls+=' urgent';else if(mins>120)cls+=' warn';
+  wrap.innerHTML='<div class="'+cls+'">🍼 Letzte Mahlzeit vor '+txt+'</div>';
+}
+
+// HOME STATS
+function updateHomeStats(){
+  const ts=todayStart(),sl=state.sleepSessions.filter(s=>s.start>=ts);
+  const totalMs=sl.reduce((s,x)=>s+x.duration,0),activeMs=state.activeSleep?Date.now()-state.activeSleep.start:0;
+  document.getElementById('today-sleep').textContent=totalMs+activeMs>0?fmt(totalMs+activeMs):'\u2014';
+  document.getElementById('today-phases').textContent=sl.length+(state.activeSleep?1:0);
+  const fl=state.feedLogs.filter(f=>f.ts>=ts),ml=fl.reduce((s,f)=>s+f.ml,0);
+  document.getElementById('today-feeds').textContent=fl.length;
+  document.getElementById('today-ml').textContent=ml>0?ml+' ml':'\u2014 ml';
+  const dl=state.diaperLogs.filter(d=>d.ts>=ts);
+  const dcEl=document.getElementById('today-diapers-count');
+  if(dcEl)dcEl.textContent=dl.length||'0';
+  const dtEl=document.getElementById('today-diapers');
+  if(dtEl){const wet=dl.filter(d=>d.type==='wet').length,both=dl.filter(d=>d.type==='both').length;dtEl.textContent=dl.length?wet+' nass \u00b7 '+both+' beides':'\u2014'}
+  const cats={nap:0,sleep:0,night:0};
+  sl.forEach(s=>cats[s.category||'sleep']+=s.duration);
+  if(activeMs>0)cats[categorizeSleep(state.activeSleep.start,activeMs)]+=activeMs;
+  const bd=document.getElementById('today-cat-breakdown');
+  if(bd){const parts=Object.entries(cats).filter(([,v])=>v>0).map(([k,v])=>{const m=CAT[k];return'<div style="flex:1;background:var(--bg3);border-radius:8px;padding:8px;text-align:center"><div style="font-size:16px">'+m.emoji+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+m.label+'</div><div style="font-size:13px;font-weight:500;color:'+m.color+'">'+fmt(v)+'</div></div>'});bd.innerHTML=parts.length?parts.join(''):'<div style="font-size:13px;color:var(--text3)">Noch kein Schlaf heute</div>'}
+}
+
+function updateRecentLog(){
+  const ts=todayStart(),sl=state.sleepSessions.filter(s=>s.end>=ts||s.start>=ts),fl=state.feedLogs.filter(f=>f.ts>=ts),dl=state.diaperLogs.filter(d=>d.ts>=ts);
+  const all=[
+    ...sl.map(s=>({ts:s.end||Date.now(),type:'sleep',data:s})),
+    ...fl.map(f=>({ts:f.ts,type:'feed',data:f})),
+    ...dl.map(d=>({ts:d.ts,type:'diaper',data:d}))
+  ].sort((a,b)=>b.ts-a.ts).slice(0,10);
+  const el=document.getElementById('recent-log');
+  if(!all.length){el.innerHTML='<div class="empty"><div class="empty-icon">🐙</div><p>Noch keine Einträge heute</p></div>';return}
+  el.innerHTML=all.map(item=>{
+    if(item.type==='sleep'){const m=CAT[item.data.category||'sleep'];return'<div class="session-item"><div class="session-cat '+m.cls+'" title="OctoRest">'+m.emoji+'</div><div class="session-info"><div class="session-title">'+m.label+'</div><div class="session-sub">'+fmtTime(item.data.start)+' \u2013 '+fmtTime(item.data.end)+'</div></div><div class="session-dur">'+fmt(item.data.duration)+'</div>'+(item.data.mood?'<div class="session-mood">'+item.data.mood+'</div>':'')+'<button class="delete-btn" onclick="deleteSleep(\''+item.data.id+'\')">&#x2715;</button></div>'}
+    if(item.type==='feed'){return'<div class="session-item"><div class="session-cat cat-feed">🍼</div><div class="session-info"><div class="session-title">'+item.data.type+'</div><div class="session-sub">'+fmtTime(item.data.ts)+'</div></div><div class="session-dur">'+item.data.ml+' ml</div><button class="delete-btn" onclick="deleteFeed(\''+item.data.id+'\')">&#x2715;</button></div>'}
+    const isWet=item.data.type==='wet';return'<div class="session-item"><div class="session-cat" style="background:rgba(45,212,191,0.15)">'+(isWet?'💧':'💩')+'</div><div class="session-info"><div class="session-title">Windel '+(isWet?'nass':'beides')+'</div><div class="session-sub">'+fmtTime(item.data.ts)+'</div></div><button class="delete-btn" onclick="deleteDiaper(\''+item.data.id+'\')">&#x2715;</button></div>';
+  }).join('');
+}
+function deleteSleep(id){state.sleepSessions=state.sleepSessions.filter(s=>s.id!=id);save('sleepSessions');updateHomeStats();updateRecentLog();showToast('Gel\u00f6scht')}
+function deleteFeed(id){state.feedLogs=state.feedLogs.filter(f=>f.id!=id);save('feedLogs');updateHomeStats();updateRecentLog();updateSinceFeed();showToast('Gel\u00f6scht')}
+function deleteDiaper(id){state.diaperLogs=state.diaperLogs.filter(d=>d.id!=id);save('diaperLogs');updateHomeStats();updateRecentLog();showToast('Gel\u00f6scht')}
+
+function makeOctoSVG(size,cfg){
+  const {bodyColor,tentacleColor,eyeType,spotColor}=cfg;
+  const cx=size/2,cy=size*0.42,r=size*0.28,er=size*0.072;
+  let t='';
+  for(let i=0;i<8;i++){
+    const a=(-90+(i/7)*180)*Math.PI/180;
+    const sx=cx+Math.cos(a)*r*0.85,sy=cy+Math.sin(a)*r*0.9+r*0.1;
+    const len=size*0.38,wave=(i%2?1:-1)*size*0.08;
+    const ex=sx+Math.cos(a)*len*0.3+wave*0.5,ey=sy+len;
+    t+=`<path d="M${sx},${sy} C${sx+wave},${sy+len*0.4} ${ex-wave},${ey-len*0.3} ${ex},${ey}" fill="none" stroke="${tentacleColor}" stroke-width="${size*0.055}" stroke-linecap="round"/>`;
+  }
+  const ex1=cx-r*0.38,ex2=cx+r*0.38,ey0=cy-r*0.08;
+  let eyes='',mouth='';
+  if(eyeType==='normal'){
+    eyes=`<circle cx="${ex1}" cy="${ey0}" r="${er}" fill="white"/><circle cx="${ex2}" cy="${ey0}" r="${er}" fill="white"/><circle cx="${ex1+er*0.2}" cy="${ey0+er*0.15}" r="${er*0.5}" fill="#1a1a2e"/><circle cx="${ex2+er*0.2}" cy="${ey0+er*0.15}" r="${er*0.5}" fill="#1a1a2e"/><circle cx="${ex1+er*0.35}" cy="${ey0}" r="${er*0.22}" fill="white"/><circle cx="${ex2+er*0.35}" cy="${ey0}" r="${er*0.22}" fill="white"/>`;
+    mouth=`<line x1="${cx-r*0.2}" y1="${cy+r*0.43}" x2="${cx+r*0.2}" y2="${cy+r*0.43}" stroke="rgba(255,255,255,0.5)" stroke-width="${er*0.4}" stroke-linecap="round"/>`;
+  } else if(eyeType==='sleepy'){
+    eyes=`<ellipse cx="${ex1}" cy="${ey0+er*0.3}" rx="${er}" ry="${er*0.5}" fill="white"/><ellipse cx="${ex2}" cy="${ey0+er*0.3}" rx="${er}" ry="${er*0.5}" fill="white"/><ellipse cx="${ex1+er*0.1}" cy="${ey0+er*0.5}" rx="${er*0.55}" ry="${er*0.3}" fill="#1a1a2e"/><ellipse cx="${ex2+er*0.1}" cy="${ey0+er*0.5}" rx="${er*0.55}" ry="${er*0.3}" fill="#1a1a2e"/><line x1="${ex1-er}" y1="${ey0+er*0.15}" x2="${ex1+er}" y2="${ey0+er*0.05}" stroke="#1a1a2e" stroke-width="${er*0.5}" stroke-linecap="round"/><line x1="${ex2-er}" y1="${ey0+er*0.15}" x2="${ex2+er}" y2="${ey0+er*0.05}" stroke="#1a1a2e" stroke-width="${er*0.5}" stroke-linecap="round"/>`;
+    mouth=`<path d="M${cx-r*0.25},${cy+r*0.48} Q${cx},${cy+r*0.42} ${cx+r*0.25},${cy+r*0.48}" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="${er*0.4}" stroke-linecap="round"/>`;
+  } else if(eyeType==='happy'){
+    eyes=`<path d="M${ex1-er},${ey0+er*0.2} Q${ex1},${ey0-er*0.6} ${ex1+er},${ey0+er*0.2}" fill="none" stroke="white" stroke-width="${er*0.7}" stroke-linecap="round"/><path d="M${ex2-er},${ey0+er*0.2} Q${ex2},${ey0-er*0.6} ${ex2+er},${ey0+er*0.2}" fill="none" stroke="white" stroke-width="${er*0.7}" stroke-linecap="round"/>`;
+    mouth=`<path d="M${cx-r*0.42},${cy+r*0.35} Q${cx},${cy+r*0.62} ${cx+r*0.42},${cy+r*0.35}" fill="none" stroke="white" stroke-width="${er*0.55}" stroke-linecap="round"/>`;
+  } else if(eyeType==='star'){
+    function star(x,y,rr){let d='';for(let i=0;i<10;i++){const a=(i*36-90)*Math.PI/180;const rv=i%2?rr*0.4:rr;d+=(i?'L':'M')+`${x+rv*Math.cos(a)},${y+rv*Math.sin(a)}`}return d+'Z'}
+    eyes=`<path d="${star(ex1,ey0,er)}" fill="white"/><path d="${star(ex2,ey0,er)}" fill="white"/>`;
+    mouth=`<path d="M${cx-r*0.35},${cy+r*0.38} Q${cx},${cy+r*0.58} ${cx+r*0.35},${cy+r*0.38}" fill="none" stroke="white" stroke-width="${er*0.55}" stroke-linecap="round"/>`;
+  } else if(eyeType==='tired'){
+    eyes=`<ellipse cx="${ex1}" cy="${ey0+er*0.4}" rx="${er}" ry="${er*0.4}" fill="white"/><ellipse cx="${ex2}" cy="${ey0+er*0.4}" rx="${er}" ry="${er*0.4}" fill="white"/><line x1="${ex1-er*1.1}" y1="${ey0}" x2="${ex1+er*0.3}" y2="${ey0+er*0.5}" stroke="#1a1a2e" stroke-width="${er*0.6}" stroke-linecap="round"/><line x1="${ex2-er*0.3}" y1="${ey0}" x2="${ex2+er*1.1}" y2="${ey0+er*0.5}" stroke="#1a1a2e" stroke-width="${er*0.6}" stroke-linecap="round"/>`;
+    mouth=`<path d="M${cx-r*0.25},${cy+r*0.48} Q${cx},${cy+r*0.42} ${cx+r*0.25},${cy+r*0.48}" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="${er*0.4}" stroke-linecap="round"/>`;
+  }
+  const spots=spotColor?`<circle cx="${cx-r*0.28}" cy="${cy+r*0.18}" r="${size*0.04}" fill="${spotColor}" opacity="0.5"/><circle cx="${cx+r*0.3}" cy="${cy-r*0.1}" r="${size*0.032}" fill="${spotColor}" opacity="0.4"/>`:''
+  return `<svg width="${size}" height="${Math.round(size*1.1)}" viewBox="0 0 ${size} ${Math.round(size*1.1)}" xmlns="http://www.w3.org/2000/svg">${t}<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r*0.88}" fill="${bodyColor}"/>${spots}${eyes}${mouth}</svg>`;
+}
+
+const OCTO_STATES=[
+  {from:0,to:5,  bodyColor:'#2a2060',tentacleColor:'#3d3080',eyeType:'sleepy',spotColor:'#5b6af7',speed:'slow'},
+  {from:5,to:7,  bodyColor:'#7c4a1a',tentacleColor:'#c47a2a',eyeType:'star',  spotColor:'#fbbf24',speed:'fast'},
+  {from:7,to:12, bodyColor:'#7c6af7',tentacleColor:'#a78bfa',eyeType:'happy', spotColor:'#2dd4bf',speed:'normal'},
+  {from:12,to:17,bodyColor:'#5b6af7',tentacleColor:'#7c6af7',eyeType:'normal',spotColor:'#a78bfa',speed:'normal'},
+  {from:17,to:20,bodyColor:'#6b3a7d',tentacleColor:'#8b4a9d',eyeType:'tired', spotColor:'#fb7185',speed:'slow'},
+  {from:20,to:24,bodyColor:'#1e1a3a',tentacleColor:'#2d2850',eyeType:'sleepy',spotColor:'#a78bfa',speed:'slow'},
+];
+
+function getOctoState(h){return OCTO_STATES.find(s=>h>=s.from&&h<s.to)||OCTO_STATES[0]}
+
+function updateOctoLogo(){
+  const h=new Date().getHours();
+  const state=getOctoState(h);
+  const dur=state.speed==='slow'?'7s':state.speed==='fast'?'2s':'4s';
+  ['home-octo','pin-octo'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const sz=id==='pin-octo'?56:44;
+    el.innerHTML=makeOctoSVG(sz,state);
+    el.style.animationDuration=dur;
+  });
+}
+
+function updateGreeting(){
+  const h=new Date().getHours();
+  document.getElementById('home-greeting').textContent=h<5?'Gute Nacht':h<11?'Guten Morgen':h<17?'Guten Tag':'Guten Abend';
+  document.getElementById('home-date').textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  updateOctoLogo();
+  const n=state.profile.name;document.getElementById('home-babyname').textContent=n?(n+(state.activeSleep?' schl\u00e4ft gerade 😴':' ist wach 🌟')):'Profil noch nicht eingerichtet';
+}
+
+// VOICE CONTROL
+let voiceActive=false,recognition=null;
+function initVoice(){
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){document.getElementById('voice-btn').style.opacity='0.3';document.getElementById('voice-btn').title='Nur in Chrome verf\u00fcgbar';return null}
+  const r=new SpeechRecognition();
+  r.lang='de-DE';r.continuous=false;r.interimResults=false;r.maxAlternatives=3;
+  r.onresult=e=>{
+    const texts=Array.from(e.results[0]).map(a=>a.transcript.toLowerCase());
+    processVoice(texts);
+  };
+  r.onend=()=>{setVoiceActive(false)};
+  r.onerror=err=>{setVoiceActive(false);setVoiceFeedback('Fehler: '+err.error)};
+  return r;
+}
+function toggleVoice(){
+  if(!recognition)recognition=initVoice();
+  if(!recognition)return;
+  if(voiceActive){recognition.stop();setVoiceActive(false);return}
+  setVoiceActive(true);setVoiceFeedback('H\u00f6re zu\u2026');
+  try{recognition.start()}catch(e){setVoiceActive(false);setVoiceFeedback('Mikrofon-Fehler')}
+}
+function setVoiceActive(v){voiceActive=v;const btn=document.getElementById('voice-btn');btn.classList.toggle('listening',v);btn.textContent=v?'🔴':'🎤'}
+function setVoiceFeedback(msg){const el=document.getElementById('voice-feedback');if(el)el.textContent=msg;setTimeout(()=>{if(el)el.textContent=''},4000)}
+
+function processVoice(texts){
+  const text=texts[0];
+  function feedback(msg){setVoiceFeedback(msg);showToast(msg)}
+
+  function extractMl(t){
+    // normalize umlauts and lowercase
+    const n=t.replace(/ä/g,'ae').replace(/ü/g,'ue').replace(/ö/g,'oe').replace(/ß/g,'ss').toLowerCase();
+    // digits first (most reliable)
+    const dm=n.match(/(\d{2,3})/);if(dm){const v=parseInt(dm[1]);if(v>=10&&v<=500)return v}
+    // German number words - sorted longest first to avoid partial matches
+    const nums={
+      // 3-digit compounds
+      'dreihundert':300,'zweihundertneunzig':290,'zweihundertachtzig':280,
+      'zweihundertsiebzig':270,'zweihundertsechzig':260,'zweihundertfunfzig':250,
+      'zweihundert':200,'hundertneunzig':190,'hundertachtzig':180,
+      'hundertsiebzig':170,'hundertsechzig':160,'hundertfunfzig':150,
+      'hundertfunf':105,'hundertvierzig':140,'hundertdreissig':130,
+      'hundertzwanzig':120,'hundertzehn':110,'hundert':100,'einhundert':100,
+      // tens
+      'dreissig':30,'vierzig':40,'funfzig':50,'sechzig':60,
+      'siebzig':70,'achtzig':80,'neunzig':90,'zwanzig':20,'zehn':10,
+      // common combos said aloud
+      'hundert dreissig':130,'hundert vierzig':140,'hundert funfzig':150,
+      'hundert sechzig':160,'hundert siebzig':170,'hundert achtzig':180,
+      'hundert neunzig':190,'zwei hundert':200,'ein hundert':100,
+      'hundert zwanzig':120,'hundert zehn':110,
+    };
+    const keys=Object.keys(nums).sort((a,b)=>b.length-a.length);
+    for(const k of keys){if(n.includes(k))return nums[k]}
+    // single digit fallback
+    const sm=n.match(/(\d+)/);return sm?parseInt(sm[1]):null;
+  }
+
+  // SCHLAF START
+  if(/schlaf.*(start|an|begin|legen)|^schlafen$|gute nacht|einschlafen/i.test(text)){
+    if(!state.activeSleep){startSleep();feedback('\u2705 Schlaf gestartet');return}
+    else{feedback('\uD83D\uDE34 Schläft schon');return}
+  }
+  // SCHLAF STOP
+  if(/schlaf.*(stop|aus|end|auf|fertig)|^aufgewacht$|^wach$|baby wach|aufwachen/i.test(text)){
+    if(state.activeSleep){stopSleep();feedback('\u2705 Schlaf beendet');return}
+    else{feedback('\u26A0\uFE0F Kein aktiver Schlaf');return}
+  }
+  // FÜTTERN
+  if(/getrunken|trinken|gefüttert|gefuttert|milliliter|flasche|muttermilch|beikost|\d+\s*ml|\bml\b/i.test(text)){
+    const ml=extractMl(text);
+    if(ml&&ml>=10&&ml<=600){
+      const type=/muttermilch|brust|stillen/i.test(text)?'Muttermilch':/beikost|brei|essen/i.test(text)?'Beikost':'Flasche';
+      state.feedLogs.unshift({id:Date.now(),ts:Date.now(),ml,type});save('feedLogs');
+      updateHomeStats();updateRecentLog();updateSinceFeed();
+      feedback('\u2705 '+ml+' ml '+type+' eingetragen');return;
+    }
+    feedback('\u26A0\uFE0F Menge nicht erkannt – z.B. "150 ml getrunken"');return;
+  }
+  // WINDEL
+  if(/windel|wickeln|gewickelt|pipi|kacka|kaka|groß|gross|beides/i.test(text)){
+    const both=/beides|kacka|kaka|groß|gross|stuhl/i.test(text);
+    logDiaper(both?'both':'wet');
+    feedback(both?'\u2705 Windel (beides) eingetragen':'\u2705 Nasse Windel eingetragen');return;
+  }
+  // HILFE
+  if(/hilfe|help|befehle|was kann|was sag/i.test(text)){
+    const h=document.getElementById('voice-help');if(h)h.classList.add('show');
+    feedback('\uD83D\uDCCB Befehle eingeblendet');return;
+  }
+  // Fallback: try alternatives
+  if(texts.length>1){processVoice(texts.slice(1));return}
+  setVoiceFeedback('\u2753 Nicht erkannt: \u201E'+text+'\u201C');
+}
+
+
+// ===================== MOOD & TEETHING =====================
+let activeMoodTags=[];
+
+function logMood(emoji){
+  const entry={id:Date.now(),ts:Date.now(),emoji,tags:[...activeMoodTags]};
+  state.moodLogs.unshift(entry);save('moodLogs');
+  // Briefly highlight selected, then reset after 1.5s
+  document.querySelectorAll('.mood-bar-btn').forEach(b=>{
+    b.classList.toggle('sel',b.textContent.trim()===emoji);
+  });
+  setTimeout(()=>document.querySelectorAll('.mood-bar-btn').forEach(b=>b.classList.remove('sel')),1500);
+  activeMoodTags=[];
+  document.querySelectorAll('.mood-tag').forEach(t=>t.classList.remove('active'));
+  updateTodayMood();
+  const tagsStr=entry.tags.length?' ('+entry.tags.join(', ')+')':'';
+  showToast(emoji+' Stimmung gespeichert'+tagsStr);
+}
+
+function toggleMoodTag(el,tag){
+  el.classList.toggle('active');
+  if(el.classList.contains('active')){if(!activeMoodTags.includes(tag))activeMoodTags.push(tag)}
+  else{activeMoodTags=activeMoodTags.filter(t=>t!==tag)}
+}
+
+function updateTodayMood(){
+  const el=document.getElementById('today-mood-display');if(!el)return;
+  const ts=todayStart(),todayMoods=state.moodLogs.filter(m=>m.ts>=ts);
+  if(!todayMoods.length){el.textContent='Noch keine Stimmung heute';return}
+  const last=todayMoods[0];
+  const minsAgo=Math.floor((Date.now()-last.ts)/60000);
+  const timeAgo=minsAgo<1?'gerade eben':minsAgo<60?'vor '+minsAgo+' Min':'vor '+Math.floor(minsAgo/60)+'h';
+  const tagsStr=last.tags.length?' · '+last.tags.join(', '):'';
+  const countStr=todayMoods.length>1?' · '+todayMoods.length+'x heute':'';
+  el.innerHTML='<span style="font-size:20px">'+last.emoji+'</span> <span style="color:var(--text2)">'+timeAgo+'</span>'+tagsStr+'<span style="color:var(--text3)">'+countStr+'</span>';
+}
+
+function toggleTeething(){
+  const today=new Date().toISOString().slice(0,10);
+  if(state.teethingDays[today])delete state.teethingDays[today];
+  else state.teethingDays[today]=true;
+  save('teethingDays');updateTeethingUI();
+}
+
+function updateTeethingUI(){
+  const btn=document.getElementById('teething-btn'),streak=document.getElementById('teething-streak');
+  if(!btn)return;
+  const today=new Date().toISOString().slice(0,10),isOn=!!state.teethingDays[today];
+  btn.className='teething-btn'+(isOn?' active':'');
+  btn.textContent=isOn?'\uD83E\uDDB7 Zahnen heute aktiv':'\uD83E\uDDB7 Heute kein Zahnen';
+  let days=0,d=new Date();
+  while(state.teethingDays[d.toISOString().slice(0,10)]){days++;d.setDate(d.getDate()-1)}
+  if(streak)streak.textContent=days>1?days+' Tage in Folge':'';
+}
+
+function toggleWidget(name){
+  state.widgets[name]=!state.widgets[name];save('widgets');applyWidgets();updateWidgetToggles();
+}
+
+function applyWidgets(){
+  const w=state.widgets;
+  const sc=document.querySelector('.sleep-center');if(sc)sc.style.display=w.sleep!==false?'flex':'none';
+  document.querySelectorAll('.card').forEach(card=>{
+    if(card.querySelector('#feed-ml'))card.style.display=w.feed!==false?'block':'none';
+    if(card.querySelector('.diaper-row'))card.style.display=w.diaper!==false?'block':'none';
+  });
+  const mw=document.getElementById('widget-mood');if(mw)mw.style.display=w.mood!==false?'block':'none';
+  const tw=document.getElementById('widget-teething');if(tw)tw.style.display=w.teething?'block':'none';
+}
+
+function updateWidgetToggles(){
+  const w=state.widgets,defaults={sleep:true,feed:true,diaper:true,mood:true,teething:false};
+  Object.keys(defaults).forEach(k=>{
+    const el=document.getElementById('wtoggle-'+k);if(!el)return;
+    const on=w[k]!==undefined?w[k]:defaults[k];
+    el.className='toggle-switch'+(on?' on':'');
+  });
+}
+
+// STATS
+let sleepChart=null,feedChart=null;
+function switchStatTab(tab){
+  ['sleep','feed','growth','insights'].forEach(t=>document.getElementById('stat-'+t).style.display=t===tab?'block':'none');
+  document.querySelectorAll('#page-stats .tab').forEach((b,i)=>b.classList.toggle('active',['sleep','feed','growth','insights'][i]===tab));
+  if(tab==='sleep')renderStats();if(tab==='feed'){renderStats();renderFeedChart()}if(tab==='growth')renderGrowth();if(tab==='insights')renderInsights();
+}
+function getLast7Days(){return Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));d.setHours(0,0,0,0);return d})}
+
+
+function renderMoodTimeline(){
+  const grid=document.getElementById('mood-timeline-grid');
+  const lbls=document.getElementById('mood-hour-labels');
+  if(!grid)return;
+  // Hour labels 0,6,12,18,23
+  if(lbls){
+    lbls.innerHTML=Array.from({length:24},(_,i)=>'<div class="mood-hour-lbl">'+(i%6===0?i:'')+'</div>').join('');
+  }
+  const days=getLast7Days();
+  const emojiColor={'\uD83D\uDE2D':'#fb7185','\uD83D\uDE41':'#fbbf24','\uD83D\uDE10':'#888',
+    '\uD83D\uDE42':'#34d399','\uD83D\uDE04':'#2dd4bf','\uD83D\uDE22':'#fb7185','\uD83D\uDE0A':'#2dd4bf'};
+  grid.innerHTML=days.map(day=>{
+    const ds=day.getTime(),de=ds+86400000;
+    const dayMoods=state.moodLogs.filter(m=>m.ts>=ds&&m.ts<de);
+    const dayLabel=day.toLocaleDateString('de-DE',{weekday:'short',day:'numeric'});
+    const hours=Array.from({length:24},(_,h)=>{
+      const hStart=ds+h*3600000,hEnd=hStart+3600000;
+      const hMoods=dayMoods.filter(m=>m.ts>=hStart&&m.ts<hEnd);
+      if(!hMoods.length)return'<div class="mood-hour"></div>';
+      const last=hMoods[hMoods.length-1];
+      const col=emojiColor[last.emoji]||'#a78bfa';
+      const tip=hMoods.map(m=>m.emoji+(m.tags.length?' '+m.tags.join(' '):'')+'<br>'+new Date(m.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})).join('<br>');
+      return'<div class="mood-hour" style="background:'+col+'22;border:1px solid '+col+'44"><span style="font-size:12px">'+last.emoji+'</span><div class="mood-hour-tip">'+tip+'</div></div>';
+    }).join('');
+    return'<div class="mood-day-row"><div class="mood-day-label">'+dayLabel+'</div><div class="mood-timeline">'+hours+'</div></div>';
+  }).join('');
+}
+function renderStats(){
+  const sessions=state.sleepSessions;
+  if(!sessions.length){['avg-sleep-day','longest-phase','avg-phases','total-days'].forEach(id=>document.getElementById(id).textContent='\u2014')}
+  else{
+    const days={};sessions.forEach(s=>{const d=dayStart(s.start);days[d]=(days[d]||[]);days[d].push(s)});
+    const dc=Object.keys(days).length,totalMs=sessions.reduce((s,x)=>s+x.duration,0);
+    document.getElementById('avg-sleep-day').textContent=fmt(totalMs/dc);
+    document.getElementById('longest-phase').textContent=fmt(Math.max(...sessions.map(s=>s.duration)));
+    document.getElementById('avg-phases').textContent=(sessions.length/dc).toFixed(1);
+    document.getElementById('total-days').textContent=dc;
+  }
+  const last7=Date.now()-7*86400000,recent7=sessions.filter(s=>s.start>=last7);
+  const ct={nap:0,sleep:0,night:0},cc={nap:0,sleep:0,night:0};
+  recent7.forEach(s=>{const c=s.category||'sleep';ct[c]+=s.duration;cc[c]++});
+  const csel=document.getElementById('cat-stats');
+  if(csel)csel.innerHTML=Object.entries(CAT).map(([k,m])=>'<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)"><div class="session-cat '+m.cls+'">'+m.emoji+'</div><div style="flex:1"><div style="font-size:14px;font-weight:500">'+m.label+'</div><div style="font-size:12px;color:var(--text3)">'+cc[k]+' Phasen</div></div><div style="font-size:14px;font-weight:500;color:'+m.color+'">'+(ct[k]>0?fmt(ct[k]):'\u2014')+'</div></div>').join('');
+  const withMood=sessions.filter(s=>s.mood);
+  const mc={};
+  withMood.forEach(s=>mc[s.mood]=(mc[s.mood]||0)+1);
+  const last14mood=Date.now()-14*86400000;
+  state.moodLogs.filter(m=>m.ts>=last14mood).forEach(m=>{mc[m.emoji]=(mc[m.emoji]||0)+1});
+  const totalMoods=Object.values(mc).reduce((a,b)=>a+b,0);
+  const msel=document.getElementById('mood-stats');
+  if(msel)msel.innerHTML=!totalMoods?'<div style="font-size:13px;color:var(--text3)">Noch keine Stimmungen erfasst</div>':Object.entries(mc).map(([emoji,count])=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><div style="font-size:22px">'+emoji+'</div><div style="flex:1;background:var(--bg3);border-radius:4px;height:8px;overflow:hidden"><div style="width:'+Math.round(count/totalMoods*100)+'%;height:100%;background:var(--accent2);border-radius:4px"></div></div><div style="font-size:13px;color:var(--text2);min-width:50px;text-align:right">'+count+'x ('+Math.round(count/totalMoods*100)+'%)</div></div>').join('');
+  document.getElementById('sleep-list').innerHTML=!sessions.length?'<div class="empty"><p>Noch keine Schlafphasen</p></div>':sessions.slice(0,20).map(s=>{const m=CAT[s.category||'sleep'];return'<div class="session-item"><div class="session-cat '+m.cls+'">'+m.emoji+'</div><div class="session-info"><div class="session-title">'+fmtDate(s.start)+'</div><div class="session-sub">'+fmtTime(s.start)+' \u2013 '+fmtTime(s.end)+'</div></div><div class="session-dur">'+fmt(s.duration)+'</div>'+(s.mood?'<div class="session-mood">'+s.mood+'</div>':'')+'</div>'}).join('');
+  const feeds=state.feedLogs;
+  if(!feeds.length){document.getElementById('avg-ml-day').textContent='\u2014';document.getElementById('avg-feeds-day').textContent='\u2014'}
+  else{const fd={};feeds.forEach(f=>{const d=dayStart(f.ts);fd[d]=(fd[d]||[]);fd[d].push(f)});const fdc=Object.keys(fd).length;document.getElementById('avg-ml-day').textContent=Math.round(feeds.reduce((s,f)=>s+f.ml,0)/fdc)+' ml';document.getElementById('avg-feeds-day').textContent=(feeds.length/fdc).toFixed(1)}
+  document.getElementById('feed-list').innerHTML=!feeds.length?'<div class="empty"><p>Noch keine Mahlzeiten</p></div>':feeds.slice(0,15).map(f=>'<div class="session-item"><div class="session-cat cat-feed">🍼</div><div class="session-info"><div class="session-title">'+f.type+'</div><div class="session-sub">'+fmtDate(f.ts)+', '+fmtTime(f.ts)+'</div></div><div class="session-dur">'+f.ml+' ml</div></div>').join('');
+  renderSleepChart();
+  renderMoodTimeline();
+}
+
+function renderSleepChart(){
+  const days=getLast7Days(),labels=days.map(d=>d.toLocaleDateString('de-DE',{weekday:'short',day:'numeric'}));
+  const ctx=document.getElementById('chart-sleep');if(sleepChart)sleepChart.destroy();
+  sleepChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[
+    {label:'Nickerchen',data:days.map(d=>{const ds=d.getTime(),de=ds+86400000;return Math.round(state.sleepSessions.filter(s=>s.start>=ds&&s.start<de&&(s.category||'sleep')==='nap').reduce((s,x)=>s+x.duration,0)/360000)/10}),backgroundColor:'rgba(45,212,191,0.7)',borderRadius:4,borderSkipped:false},
+    {label:'Schl\u00e4fchen',data:days.map(d=>{const ds=d.getTime(),de=ds+86400000;return Math.round(state.sleepSessions.filter(s=>s.start>=ds&&s.start<de&&(s.category||'sleep')==='sleep').reduce((s,x)=>s+x.duration,0)/360000)/10}),backgroundColor:'rgba(124,106,247,0.7)',borderRadius:4,borderSkipped:false},
+    {label:'Nachtschlaf',data:days.map(d=>{const ds=d.getTime(),de=ds+86400000;return Math.round(state.sleepSessions.filter(s=>s.start>=ds&&s.start<de&&(s.category||'sleep')==='night').reduce((s,x)=>s+x.duration,0)/360000)/10}),backgroundColor:'rgba(90,100,200,0.7)',borderRadius:4,borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#888',font:{size:11},boxWidth:12}}},scales:{x:{stacked:true,grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#888',font:{size:11}}},y:{stacked:true,grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#888',font:{size:11}},beginAtZero:true}}}});
+}
+
+function renderFeedChart(){
+  const days=getLast7Days(),labels=days.map(d=>d.toLocaleDateString('de-DE',{weekday:'short',day:'numeric'}));
+  const ctx=document.getElementById('chart-feed');if(feedChart)feedChart.destroy();
+  feedChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data:days.map(d=>{const ds=d.getTime(),de=ds+86400000;return state.feedLogs.filter(f=>f.ts>=ds&&f.ts<de).reduce((s,f)=>s+f.ml,0)}),backgroundColor:'rgba(45,212,191,0.7)',borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#888',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#888',font:{size:11}},beginAtZero:true}}}});
+}
+
+// WHO DATA
+const RS=[[0,2,16,18,6,8],[2,4,15,17,5,7],[4,8,14,16,4,6],[8,13,13,15,3,5],[13,26,12,15,2,4],[26,39,12,14,2,3],[39,52,11,14,1,2]];
+const RF=[[0,2,400,600,8,12,'Alle 2\u20133h, nach Bedarf'],[2,4,500,700,7,10,'Ca. 60\u201390ml'],[4,8,600,800,6,8,'Ca. 150ml/kg/Tag'],[8,13,700,900,5,7,'L\u00e4ngere Abst\u00e4nde m\u00f6glich'],[13,26,750,950,4,6,'Beikost ab ca. 4. Monat m\u00f6glich'],[26,39,600,900,3,5,'Beikost erg\u00e4nzt Milch'],[39,52,500,800,3,4,'Beikost 3x t\u00e4glich']];
+const RM=[{von:0,bis:4,text:'Erkennt Gesichter, folgt Objekten mit den Augen'},{von:0,bis:4,text:'Reagiert auf Stimmen, besonders die der Eltern'},{von:4,bis:8,text:'Erstes soziales L\u00e4cheln \u2013 ein Meilenstein!'},{von:4,bis:8,text:'Hebt den Kopf in Bauchlage f\u00fcr kurze Zeit'},{von:8,bis:16,text:'Greift nach Objekten, lacht laut'},{von:8,bis:16,text:'Schlafregression m\u00f6glich (~3./4. Monat)'},{von:16,bis:26,text:'Dreht sich, zeigt Interesse an fester Nahrung'},{von:26,bis:39,text:'Setzt sich auf, beginnt zu robben'},{von:39,bis:52,text:'Krabbelt, zieht sich hoch, Trennungsangst beginnt'}];
+
+// EXTENDED MILESTONE LIST for manual selection
+const RM_ALL=[
+  // Sozial & Kommunikation
+  'Erkennt Gesichter der Eltern',
+  'Erstes soziales Lächeln',
+  'Lacht laut',
+  'Reagiert auf den eigenen Namen',
+  'Erstes Silbenplappern (ba-ba, ma-ma)',
+  'Zeigt auf Dinge',
+  'Erstes Wort',
+  'Erste Zweiwort-Sätze',
+  'Winkt Tschüss',
+  'Trennungsangst beginnt',
+  // Motorik
+  'Hebt Kopf in Bauchlage',
+  'Hält Kopf selbständig',
+  'Dreht sich vom Bauch auf den Rücken',
+  'Dreht sich vom Rücken auf den Bauch',
+  'Sitzt mit Unterstützung',
+  'Sitzt ohne Hilfe',
+  'Robbt / Krabbelt',
+  'Zieht sich hoch',
+  'Steht mit Unterstützung',
+  'Erste Schritte',
+  // Ernährung
+  'Erste Beikost',
+  'Trinkt aus Becher',
+  'Isst Fingerfood selbständig',
+  'Erste Zähne',
+  // Schlaf
+  'Schläft erste 4+ Stunden am Stück',
+  'Schläft durch (6+ Stunden)',
+  'Regelmäßiger Schlafrhythmus etabliert',
+  // Sonstiges
+  'Erstes Lachen',
+  'Erkennt sich im Spiegel',
+  'Spielt Verstecken (Kuckuck)',
+  'Reagiert auf Musik',
+];
+// WAKE WINDOWS
+const WW=[
+  [0,4,45,60,'4–6'],[4,8,60,90,'4–5'],[8,12,75,120,'4'],
+  [12,18,90,120,'3–4'],[18,26,120,150,'3'],[26,35,150,180,'2–3'],
+  [35,52,150,210,'2'],[52,78,180,240,'1–2'],
+];
+function getWW(weeks){return WW.find(r=>weeks>=r[0]&&weeks<r[1])||WW[WW.length-1]}
+
+function updateWakeWindow(){
+  const wrap=document.getElementById('wake-window-wrap');
+  if(!wrap||state.activeSleep){if(wrap)wrap.innerHTML='';return}
+  const lastSleep=state.sleepSessions[0];
+  if(!lastSleep){wrap.innerHTML='';return}
+  const wakeMins=Math.floor((Date.now()-lastSleep.end)/60000);
+  const weeks=getAgeWeeks();
+  if(weeks===null){
+    const h=Math.floor(wakeMins/60),m=wakeMins%60;
+    wrap.innerHTML='<div class="ww-pill ww-idle">⏱ Wach seit '+(h>0?h+'h '+m+'min':m+' min')+'</div>';
+    return;
+  }
+  const ww=getWW(weeks),minM=ww[2],maxM=ww[3];
+  const pct=Math.min(100,Math.round(wakeMins/maxM*100));
+  let cls,label,barCls;
+  if(wakeMins<minM*0.8){cls='ww-idle';barCls='idle';label='Noch zu früh'}
+  else if(wakeMins<=maxM){cls='ww-ok';barCls='ok';label='Gutes Schlaffenster'}
+  else if(wakeMins<=maxM*1.2){cls='ww-warn';barCls='warn';label='Übermüdet?'}
+  else{cls='ww-over';barCls='over';label='Zu lange wach!'}
+  const h=Math.floor(wakeMins/60),m=wakeMins%60;
+  const wachTxt=h>0?h+'h '+m+'min':m+' min';
+  const remM=maxM-wakeMins;
+  const remTxt=remM>0?(Math.floor(remM/60)>0?Math.floor(remM/60)+'h '+remM%60+'min':remM+'min')+' übrig':'jetzt einschlafen';
+  wrap.innerHTML=
+    '<div class="ww-pill '+cls+'">☀ Wach seit '+wachTxt+' – '+label+'</div>'+
+    '<div class="ww-bar-wrap">'+
+      '<div class="ww-bar-track"><div class="ww-bar-fill '+barCls+'" style="width:'+pct+'%"></div></div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:3px">'+
+        '<span>'+minM+'min</span><span>'+remTxt+'</span><span>'+maxM+'min</span>'+
+      '</div>'+
+    '</div>';
+}
+
+const RR=[4,8,17,26,37,46];
+function gRef(arr,w){return arr.find(r=>w>=r[0]&&w<r[1])||arr[arr.length-1]}
+function scColor(v,mn,mx){if(v===null)return'blue';if(v<mn*0.85||v>mx*1.15)return'red';if(v<mn||v>mx)return'amber';return'green'}
+function scLabel(v,mn,mx){if(v===null)return'Richtwert';if(v<mn*0.85)return'Deutlich unter Richtwert';if(v>mx*1.15)return'Deutlich \u00fcber Richtwert';if(v<mn)return'Etwas unter Richtwert';if(v>mx)return'Etwas \u00fcber Richtwert';return'Im normalen Bereich'}
+function renderBar(v,mn,mx,unit,label){
+  const tot=mx*1.5,rl=Math.round(mn/tot*100),rw=Math.round((mx-mn)/tot*100),col=v!==null?scColor(v,mn,mx):'blue',fw=v!==null?Math.min(100,Math.round(v/tot*100)):0;
+  return'<div style="margin:8px 0"><div class="bar-label"><span>'+label+'</span><span style="color:var(--text)">'+(v!==null?v+' '+unit:'\u2014')+' <span style="color:var(--text3)">(Richtwert: '+mn+'\u2013'+mx+' '+unit+')</span></span></div><div class="bar-track"><div class="bar-range" style="left:'+rl+'%;width:'+rw+'%"></div>'+(v!==null?'<div class="bar-fill '+col+'" style="width:'+fw+'%"></div>':'')+'<div class="bar-marker" style="left:'+rl+'%"></div><div class="bar-marker" style="left:'+Math.round(mx/tot*100)+'%"></div></div></div>';
+}
+
+
+function toggleMilestone(key,label,customTs){
+  if(state.milestones[key]&&!customTs){
+    delete state.milestones[key];
+  } else {
+    state.milestones[key]={ts:customTs||Date.now(),label:label||key};
+  }
+  save('milestones');
+  renderInsights();
+}
+function updateMilestoneDate(key,dateVal){
+  if(!state.milestones[key]||!dateVal)return;
+  state.milestones[key].ts=new Date(dateVal).getTime();
+  save('milestones');
+  renderInsights();
+}
+function addManualMilestone(){
+  const sel=document.getElementById('ms-select');
+  const txt=document.getElementById('ms-manual-text');
+  const dt=document.getElementById('ms-manual-date');
+  if(!dt||!dt.value){showToast('⚠️ Bitte Datum angeben');return}
+  // Prefer text input if filled, otherwise use select
+  let label='';
+  if(txt&&txt.value.trim()){
+    label=txt.value.trim();
+  } else if(sel&&sel.value){
+    label=sel.value;
+  } else {
+    showToast('⚠️ Bitte Meilenstein auswählen oder eingeben');return;
+  }
+  const key='ms_manual_'+Date.now();
+  state.milestones[key]={ts:new Date(dt.value).getTime(),label,manual:true};
+  save('milestones');
+  if(sel)sel.value='';
+  if(txt)txt.value='';
+  document.getElementById('ms-custom-row').style.display='none';
+  renderInsights();
+  showToast('✅ '+label+' eingetragen');
+}
+function toggleMsCustom(){
+  const row=document.getElementById('ms-custom-row');
+  if(row)row.style.display=row.style.display==='none'?'flex':'none';
+}
+function deleteMilestone(key){
+  delete state.milestones[key];
+  save('milestones');
+  renderInsights();
+}
+
+function renderInsights(){
+  const el=document.getElementById('insights-content'),weeks=getAgeWeeks();
+  if(weeks===null){el.innerHTML='<div class="card"><div class="insight"><div class="insight-icon">👶</div><div class="insight-text">Bitte das <strong>Geburtsdatum</strong> im Profil eintragen.</div></div></div>';return}
+  const rs=gRef(RS,weeks),rf=gRef(RF,weeks),sessions=state.sleepSessions,feeds=state.feedLogs;
+  const last14=Date.now()-14*86400000,recS=sessions.filter(s=>s.start>=last14),recF=feeds.filter(f=>f.ts>=last14);
+  let avgSH=null,avgP=null,avgMl=null,avgFe=null;
+  if(recS.length>=3){const days={};recS.forEach(s=>{const d=dayStart(s.start);days[d]=(days[d]||0)+s.duration});const dc=Object.keys(days).length;avgSH=Math.round(Object.values(days).reduce((a,b)=>a+b,0)/dc/360000)/10;avgP=Math.round(recS.length/dc*10)/10}
+  if(recF.length>=3){const fd={};recF.forEach(f=>{const d=dayStart(f.ts);fd[d]=(fd[d]||0)+f.ml});const fdc=Object.keys(fd).length;avgMl=Math.round(Object.values(fd).reduce((a,b)=>a+b,0)/fdc);avgFe=Math.round(recF.length/fdc*10)/10}
+  const isReg=RR.some(rw=>Math.abs(weeks-rw)<=1),ms=RM.filter(m=>weeks>=m.von&&weeks<m.bis),up=RM.filter(m=>m.von>weeks&&m.von<=weeks+8);
+  const napC=recS.filter(s=>s.category==='nap').length,nightC=recS.filter(s=>s.category==='night').length,sleepC=recS.filter(s=>s.category==='sleep').length;
+  const wm=recS.filter(s=>s.mood),sadP=wm.length?Math.round(wm.filter(s=>s.mood==='😢').length/wm.length*100):null,hapP=wm.length?Math.round(wm.filter(s=>s.mood==='😊').length/wm.length*100):null;
+  // Diaper insights
+  const recD=state.diaperLogs.filter(d=>d.ts>=last14);
+  let html='<div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Alter: <strong style="color:var(--text)">'+weeks+' Wochen</strong> \u00b7 Basis: letzte 14 Tage</div>';
+  html+='<div style="font-size:13px;font-weight:500;margin-bottom:10px;color:var(--text2)">Schlaf</div>';
+  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">😴</div><div class="rec-title">Gesamtschlaf / Tag</div><div class="rec-badge badge-'+scColor(avgSH,rs[2],rs[3])+'">'+scLabel(avgSH,rs[2],rs[3])+'</div></div>'+renderBar(avgSH,rs[2],rs[3],'h','Stunden')+'<div class="rec-text">Richtwert f\u00fcr '+weeks+' Wochen: <strong>'+rs[2]+'\u2013'+rs[3]+'h</strong> pro Tag.</div></div>';
+  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">🔢</div><div class="rec-title">Schlafphasen / Tag</div><div class="rec-badge badge-'+scColor(avgP,rs[4],rs[5])+'">'+scLabel(avgP,rs[4],rs[5])+'</div></div>'+renderBar(avgP,rs[4],rs[5],'Phasen','Phasen/Tag')+'<div class="rec-text">Typisch: <strong>'+rs[4]+'\u2013'+rs[5]+' Phasen</strong> t\u00e4glich.</div></div>';
+  if(recS.length>=5)html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">📂</div><div class="rec-title">Schlaf-Kategorien</div></div><div class="rec-text">Letzte 14 Tage: <strong>'+nightC+'x Nachtschlaf</strong>, <strong>'+sleepC+'x Schl\u00e4fchen</strong>, <strong>'+napC+'x Nickerchen</strong>.<br>'+(weeks<13?'Viele kurze Phasen sind normal.':weeks<26?'Nickerchen werden seltener – gesunde Entwicklung.':'Meist ein oder zwei Schl\u00e4fchen plus langer Nachtschlaf.')+'</div></div>';
+  if(wm.length>=5)html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">😊</div><div class="rec-title">Aufwach-Stimmung</div><div class="rec-badge badge-'+(hapP>=60?'green':sadP>=40?'amber':'blue')+'">'+(hapP>=60?'Gut erholt':sadP>=40?'Oft unruhig':'Gemischt')+'</div></div><div class="rec-text">'+hapP+'% ausgeruht, '+sadP+'% unruhig.'+(sadP>=40?' H\u00e4ufige Unruhe kann auf zu kurze Phasen hinweisen.':hapP>=70?' Das Baby erholt sich gut!':' Normale Verteilung.')+'</div></div>';
+  if(isReg)html+='<div class="rec-card" style="border-color:rgba(251,191,36,0.3)"><div class="rec-header"><div class="rec-icon">&#x26A1;</div><div class="rec-title">M\u00f6gliche Schlafregression</div><div class="rec-badge badge-amber">Wachstumsschub</div></div><div class="rec-text">Woche '+weeks+' ist bekannt f\u00fcr Schlafregression. Das ist <strong>Entwicklung</strong> und geht vorbei.</div><div class="rec-sub">Bekannte Regressionen: Woche 4, 8, 12, 17, 26, 37, 46</div></div>';
+  html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">Ern\u00e4hrung</div>';
+  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">🍼</div><div class="rec-title">Trinkmenge / Tag</div><div class="rec-badge badge-'+scColor(avgMl,rf[2],rf[3])+'">'+scLabel(avgMl,rf[2],rf[3])+'</div></div>'+renderBar(avgMl,rf[2],rf[3],'ml','ml/Tag')+'<div class="rec-text">Richtwert: <strong>'+rf[2]+'\u2013'+rf[3]+' ml/Tag</strong>.</div><div class="rec-sub">'+rf[6]+'</div></div>';
+  html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">&#x1F550;</div><div class="rec-title">Mahlzeiten / Tag</div><div class="rec-badge badge-'+scColor(avgFe,rf[4],rf[5])+'">'+scLabel(avgFe,rf[4],rf[5])+'</div></div>'+renderBar(avgFe,rf[4],rf[5],'x','Mahlzeiten')+'</div>';
+  if(weeks>=17&&weeks<26)html+='<div class="rec-card" style="border-color:rgba(45,212,191,0.3)"><div class="rec-header"><div class="rec-icon">&#x1F955;</div><div class="rec-title">Beikost-Bereitschaft?</div><div class="rec-badge badge-blue">Info</div></div><div class="rec-text">Start immer mit dem <strong>Kinderarzt besprechen</strong>.</div></div>';
+  if(recD.length>=5){
+    const dPerDay=Math.round(recD.length/14*10)/10;
+    html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">💧</div><div class="rec-title">Windeln / Tag</div><div class="rec-badge badge-'+(dPerDay>=4?'green':dPerDay>=2?'amber':'red')+'">'+dPerDay+' /Tag</div></div><div class="rec-text">Letzte 14 Tage: '+recD.filter(d=>d.type==='wet').length+' nasse, '+recD.filter(d=>d.type==='both').length+' beides. '+(weeks<8?'6\u20138 Windeln/Tag sind ein gutes Zeichen, dass das Baby genug trinkt.':'\u00dcblicherweise 4\u20136/Tag im 2. Monat.')+'</div></div>';
+  }
+  if(ms.length){html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">Entwicklung jetzt</div>';
+    html+=ms.map(m=>{
+      const key='ms_'+m.von+'_'+m.text.slice(0,20).replace(/\s/g,'_');
+      const done=!!(state.milestones[key]);const doneTs=done&&state.milestones[key].ts?new Date(state.milestones[key].ts).toLocaleDateString('de-DE',{day:'numeric',month:'short'}):null;
+      return'<div class="ms-item'+(done?' done':'')+'" onclick="toggleMilestone(\'' +key+ '\')">'
+        +'<div class="ms-check">'+(done?'&#x2714;':'')+'</div>'
+        +'<div><div class="ms-label">'+m.text+'</div>'
+        +'<div class="ms-age">'+m.von+'–'+m.bis+' Wochen'+(doneTs?' · ✓ '+doneTs:'')+'</div></div>'
+        +'</div>';
+    }).join('')}
+  if(up.length){html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text3)">Als nächstes (8 Wochen)</div>';
+    html+=up.map(m=>{
+      const key='ms_'+m.von+'_'+m.text.slice(0,20).replace(/\s/g,'_');
+      const done=!!(state.milestones[key]);const doneTs=done&&state.milestones[key].ts?new Date(state.milestones[key].ts).toLocaleDateString('de-DE',{day:'numeric',month:'short'}):null;
+      return'<div class="ms-item upcoming'+(done?' done':'')+'" onclick="toggleMilestone(\'' +key+ '\')">'
+        +'<div class="ms-check">'+(done?'&#x2714;':'')+'</div>'
+        +'<div><div class="ms-label">'+m.text+'</div>'
+        +'<div class="ms-age">'+m.von+'–'+m.bis+' Wochen · kommt noch'+(doneTs?' · ✓ '+doneTs:'')+'</div></div>'
+        +'</div>';
+    }).join('')}
+  // Milestone history
+  const doneMs=Object.entries(state.milestones).filter(([k,v])=>v&&v.ts).sort((a,b)=>b[1].ts-a[1].ts);
+  // Always show milestone diary section
+  {
+    html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">📖 Meilenstein-Tagebuch</div>';
+    html+='<div class="ms-timeline">';
+    if(!doneMs.length)html+='<div style="font-size:13px;color:var(--text3);padding:8px 0">Noch keine Meilensteine eingetragen. Hake oben etwas ab oder trage es direkt ein.</div>';
+    html+=doneMs.map(([k,v])=>{
+      const d=new Date(v.ts);
+      const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      return'<div class="ms-tl-item">'
+        +'<div class="ms-tl-dot"></div>'
+        +'<div style="flex-shrink:0"><input class="ms-tl-date-input" type="date" value="'+iso+'" onchange="updateMilestoneDate(\''+k+'\',this.value)" title="Datum ändern"></div>'
+        +'<div class="ms-tl-text" style="flex:1">'+v.label+(v.manual?' <span style="font-size:10px;color:var(--text3)">• manuell</span>':'')+'</div>'
+        +'<button onclick="deleteMilestone(\''+k+'\')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px" title="Löschen">✕</button>'
+        +'</div>';
+    }).join('');
+    html+='</div>';
+    // Add manual entry form
+    const todayIso=new Date().toISOString().slice(0,10);
+    const selectOpts=RM_ALL.filter(t=>!Object.values(state.milestones).some(v=>v.label===t)).map(t=>'<option value="'+t+'">'+t+'</option>').join('');
+    html+='<div class="ms-tl-add" style="flex-direction:column;gap:8px">'
+      +'<div class="ms-tl-add-label" style="margin-bottom:0">Meilenstein nachträglich eintragen</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'
+        +'<div style="flex:2;min-width:160px"><select id="ms-select" class="form-select" style="font-size:13px;padding:8px 10px"><option value="">-- Auswählen --</option>'+selectOpts+'</select></div>'
+        +'<div style="flex-shrink:0"><input id="ms-manual-date" class="form-input" type="date" value="'+todayIso+'" style="font-size:13px;padding:8px 10px;width:140px"></div>'
+        +'<button class="btn btn-primary btn-sm" onclick="addManualMilestone()" style="flex-shrink:0">➕ Eintragen</button>'
+        +'<button onclick="toggleMsCustom()" style="background:rgba(167,139,250,0.12);border:1px solid var(--accent);border-radius:8px;color:var(--accent2);padding:8px 12px;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit">✏️ + Eigener Text</button>'
+      +'</div>'
+      +'<div id="ms-custom-row" style="display:none;gap:8px;width:100%">'
+        +'<input id="ms-manual-text" class="form-input" type="text" placeholder="Eigener Meilenstein…" style="font-size:13px;padding:8px 10px;flex:1">'
+      +'</div>'
+      +'</div>';
+  }
+
+  if(weeks!==null){
+    const ww=getWW(weeks);
+    html+='<div style="font-size:13px;font-weight:500;margin:16px 0 10px;color:var(--text2)">Wake Windows</div>';
+    html+='<div class="rec-card"><div class="rec-header"><div class="rec-icon">&#x23F0;</div><div class="rec-title">Empfohlenes Wake Window</div></div>'
+      +'<div class="rec-text">Mit '+weeks+' Wochen: <strong>'+ww[2]+'–'+ww[3]+' Minuten</strong> wach, dann schlafen legen.</div>'
+      +'<div class="rec-text" style="margin-top:6px">Typisch <strong>'+ww[4]+' Schläfchen</strong> am Tag.</div>'
+      +'<div class="rec-sub">Wake Windows sind Richtwerte – manche Babys brauchen mehr oder weniger.</div></div>';
+    html+='<div class="rec-card"><div style="font-size:13px;font-weight:500;margin-bottom:10px">Tabelle nach Alter</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 8px;font-size:12px;">'
+      +'<div style="font-weight:500;color:var(--text2)">Alter</div><div style="font-weight:500;color:var(--text2)">Wake Window</div><div style="font-weight:500;color:var(--text2)">Schläfchen</div>'
+      +WW.map(r=>{const cur=weeks>=r[0]&&weeks<r[1];const col=cur?'var(--accent2)':'var(--text3)';const valcol=cur?'var(--text)':'var(--text3)';return'<div style="color:'+col+'">'+r[0]+'–'+r[1]+' Wo</div><div style="color:'+valcol+'">'+r[2]+'–'+r[3]+'min</div><div style="color:'+valcol+'">'+r[4]+'</div>'}).join('')
+      +'</div></div>';
+  }
+  html+='<div class="disclaimer">&#x2695;&#xFE0F; Alle Angaben sind <strong>Orientierungswerte</strong> (WHO, AAP). Jedes Baby entwickelt sich individuell. Bei Fragen immer den <strong>Kinderarzt</strong> hinzuziehen.</div>';
+  el.innerHTML=html;
+}
+
+// GROWTH
+let weightChart=null;
+function saveGrowth(){
+  const date=document.getElementById('growth-date').value;
+  if(!date){showToast('\u26a0\ufe0f Bitte Datum w\u00e4hlen');return}
+  state.growthLogs.push({id:Date.now(),date,weight:parseInt(document.getElementById('growth-weight').value)||0,height:parseFloat(document.getElementById('growth-height').value)||0,head:parseFloat(document.getElementById('growth-head').value)||0});
+  state.growthLogs.sort((a,b)=>a.date.localeCompare(b.date));save('growthLogs');
+  ['growth-weight','growth-height','growth-head'].forEach(id=>document.getElementById(id).value='');
+  renderGrowth();showToast('📏 Messung gespeichert');
+}
+function renderGrowth(){
+  const logs=state.growthLogs,ctx=document.getElementById('chart-weight');
+  if(weightChart)weightChart.destroy();
+  if(logs.length)weightChart=new Chart(ctx,{type:'line',data:{labels:logs.map(l=>new Date(l.date).toLocaleDateString('de-DE',{day:'numeric',month:'short'})),datasets:[{data:logs.map(l=>l.weight),borderColor:'rgba(251,191,36,0.8)',backgroundColor:'rgba(251,191,36,0.1)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'#fbbf24'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#888',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#888',font:{size:11}}}}}});
+  const who=document.getElementById('who-content');
+  if(logs.length&&state.profile.birthday){const l=logs[logs.length-1],w=getAgeWeeks(),med=w<=0?3500:w<=4?3500+w*200:w<=13?4300+(w-4)*220:w<=26?6280+(w-13)*170:8490+(w-26)*90,pct=Math.min(99,Math.max(1,Math.round(50+(l.weight-med)/(med*0.15)*25)));who.innerHTML='<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--text2)">Gewicht ('+l.weight+'g)</span><span style="color:var(--amber)">'+pct+'. Perzentile</span></div><div class="percentile-bar"><div class="percentile-fill" style="width:'+pct+'%"></div></div><div style="font-size:12px;color:var(--text3)">Alter: '+w+' Wochen \u00b7 WHO-Referenz: ~'+Math.round(med/100)*100+'g</div><div style="font-size:12px;color:var(--text3);margin-top:8px">\u26a0\ufe0f Nur Orientierungswert \u2013 Kinderarzt hinzuziehen.</div></div>'}
+  else if(!logs.length)who.innerHTML='<div class="empty"><div class="empty-icon">📏</div><p>Noch keine Messungen</p></div>';
+  else who.innerHTML='<div style="font-size:13px;color:var(--text3)">Geburtsdatum im Profil eintragen f\u00fcr Perzentilen.</div>';
+  document.getElementById('growth-list').innerHTML=!logs.length?'<div class="empty"><div class="empty-icon">📊</div><p>Noch keine Messungen</p></div>':[...logs].reverse().map(l=>'<div class="session-item"><div style="width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0"></div><div class="session-info"><div class="session-title">'+new Date(l.date).toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'})+'</div><div class="session-sub">'+(l.weight?l.weight+'g':'')+(l.height?' \u00b7 '+l.height+'cm':'')+(l.head?' \u00b7 KU: '+l.head+'cm':'')+(l.note?' \u00b7 '+l.note:'')+'</div></div><button class="delete-btn" onclick="deleteGrowth(\''+l.id+'\')">&#x2715;</button></div>').join('');
+}
+function deleteGrowth(id){state.growthLogs=state.growthLogs.filter(l=>l.id!=id);save('growthLogs');renderGrowth();showToast('Gel\u00f6scht')}
+
+// PROFILE
+function renderProfile(){
+  const p=state.profile;
+  if(p.name)document.getElementById('profile-name').value=p.name;
+  if(p.birthday)document.getElementById('profile-birthday').value=p.birthday;
+  if(p.birthweight)document.getElementById('profile-birthweight').value=p.birthweight;
+  if(p.birthheight)document.getElementById('profile-birthheight').value=p.birthheight;
+  if(p.gender)document.getElementById('profile-gender').value=p.gender;
+  if(p.birthday){document.getElementById('age-card').style.display='block';const w=getAgeWeeks(),m=Math.floor(w/4.33),rw=w-Math.round(m*4.33);document.getElementById('age-display').innerHTML='<div style="font-size:28px;font-weight:300;color:var(--accent2)">'+w+' Wochen</div><div style="font-size:14px;color:var(--text3);margin-top:4px">'+(m>0?m+' Monate ':'' )+(rw>0?rw+' Wochen':'')+'</div>'}
+  // Set history datetime defaults to now
+  const now=localDT(Date.now());
+  ['hist-sleep-start','hist-sleep-end','hist-feed-ts','hist-diaper-ts'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=now});
+}
+function saveProfile(){
+  state.profile={name:document.getElementById('profile-name').value,birthday:document.getElementById('profile-birthday').value,birthweight:document.getElementById('profile-birthweight').value,birthheight:document.getElementById('profile-birthheight').value,gender:document.getElementById('profile-gender').value};
+  save('profile');updateGreeting();renderProfile();showToast('\u2705 Profil gespeichert');
+}
+
+// HISTORY / BACKFILL
+function setHistType(type,btn){
+  document.querySelectorAll('.hist-type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['sleep','feed','diaper','growth'].forEach(t=>{const el=document.getElementById('hist-'+t);if(el)el.className='hist-fields'+(t===type?' show':'')});
+}
+function histSaveSleep(){
+  const s=document.getElementById('hist-sleep-start').value,e=document.getElementById('hist-sleep-end').value;
+  if(!s||!e){showToast('\u26a0\ufe0f Bitte Start und Ende angeben');return}
+  const start=new Date(s).getTime(),end=new Date(e).getTime();
+  if(end<=start){showToast('\u26a0\ufe0f Ende muss nach Start liegen');return}
+  const dur=end-start;
+  state.sleepSessions.push({id:Date.now(),start,end,duration:dur,category:categorizeSleep(start,dur),mood:null,manual:true});
+  state.sleepSessions.sort((a,b)=>b.start-a.start);save('sleepSessions');
+  updateHomeStats();showToast('\u2705 Schlaf eingetragen ('+fmt(dur)+')');
+}
+function histSaveFeed(){
+  const ts=document.getElementById('hist-feed-ts').value,ml=parseInt(document.getElementById('hist-feed-ml').value)||0,type=document.getElementById('hist-feed-type').value;
+  if(!ts||ml<=0){showToast('\u26a0\ufe0f Bitte alle Felder ausf\u00fcllen');return}
+  state.feedLogs.push({id:Date.now(),ts:new Date(ts).getTime(),ml,type,manual:true});
+  state.feedLogs.sort((a,b)=>b.ts-a.ts);save('feedLogs');
+  updateHomeStats();updateSinceFeed();showToast('\u2705 Mahlzeit eingetragen ('+ml+'ml)');
+}
+function histSaveDiaper(type){
+  const ts=document.getElementById('hist-diaper-ts').value;
+  if(!ts){showToast('\u26a0\ufe0f Bitte Datum angeben');return}
+  state.diaperLogs.push({id:Date.now(),ts:new Date(ts).getTime(),type,manual:true});
+  state.diaperLogs.sort((a,b)=>b.ts-a.ts);save('diaperLogs');
+  updateHomeStats();showToast('\u2705 Windel eingetragen');
+}
+function histSaveGrowth(){
+  const date=document.getElementById('hist-growth-date').value;
+  if(!date){showToast('\u26a0\ufe0f Bitte Datum angeben');return}
+  const entry={id:Date.now(),date,weight:parseInt(document.getElementById('hist-growth-weight').value)||0,height:parseFloat(document.getElementById('hist-growth-height').value)||0,head:parseFloat(document.getElementById('hist-growth-head').value)||0,note:document.getElementById('hist-growth-note').value||'',manual:true};
+  state.growthLogs.push(entry);state.growthLogs.sort((a,b)=>a.date.localeCompare(b.date));save('growthLogs');
+  showToast('\u2705 Messung eingetragen'+(entry.note?' ('+entry.note+')':''));
+}
+
+// EXPORT / RESET
+function importData(event){
+  const file=event.target.files[0];
+  if(!file){return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      // Validate structure
+      if(!data.profile&&!data.sleepSessions&&!data.feedLogs){
+        document.getElementById('import-status').innerHTML='<span style="color:var(--rose)">⚠️ Ungültige Datei – kein OctoRest-Export</span>';
+        return;
+      }
+      // Restore data
+      if(data.profile){state.profile=data.profile;save('profile')}
+      if(data.sleepSessions){state.sleepSessions=data.sleepSessions;save('sleepSessions')}
+      if(data.feedLogs){state.feedLogs=data.feedLogs;save('feedLogs')}
+      if(data.diaperLogs){state.diaperLogs=data.diaperLogs;save('diaperLogs')}
+      if(data.growthLogs){state.growthLogs=data.growthLogs;save('growthLogs')}
+      if(data.milestones){state.milestones=data.milestones;save('milestones')}
+      if(data.moodLogs){state.moodLogs=data.moodLogs;save('moodLogs')}
+      if(data.teethingDays){state.teethingDays=data.teethingDays;save('teethingDays')}
+      const exported=data.exportedAt?new Date(data.exportedAt).toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'}):'unbekannt';
+      document.getElementById('import-status').innerHTML='<span style="color:var(--green)">✅ Import erfolgreich! Export vom '+exported+'</span>';
+      // Refresh UI
+      updateGreeting();updateSleepUI();updateHomeStats();updateRecentLog();updateSinceFeed();updateWakeWindow();drawOctoRing();updateTodayMood();updateTeethingUI();applyWidgets();updateWidgetToggles();renderProfile();
+      showToast('✅ Daten importiert!');
+    }catch(err){
+      document.getElementById('import-status').innerHTML='<span style="color:var(--rose)">⚠️ Fehler: '+err.message+'</span>';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({profile:state.profile,sleepSessions:state.sleepSessions,feedLogs:state.feedLogs,diaperLogs:state.diaperLogs,growthLogs:state.growthLogs,milestones:state.milestones,moodLogs:state.moodLogs,teethingDays:state.teethingDays,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='octorest-export-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);showToast('📥 Export gestartet');
+}
+function confirmReset(){if(confirm('Wirklich alle Daten l\u00f6schen?')){localStorage.clear();location.reload()}}
+
+// PIN
+const PIN_KEY='app_pin';let pinBuf='',pinMode='unlock',pinNewTemp='';
+function hashPin(p){let h=0;for(let i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h|=0}return String(h)}
+function initPin(){
+  const stored=localStorage.getItem(PIN_KEY),sess=sessionStorage.getItem('pin_ok');
+  if(sess==='1'){unlockApp();return}
+  if(!stored){pinMode='setup';document.getElementById('pin-subtitle').textContent='Neuen PIN w\u00e4hlen (4 Stellen)';document.getElementById('pin-setup-note').style.display='block'}
+  else{pinMode='unlock';document.getElementById('pin-subtitle').textContent='PIN eingeben'}
+  document.getElementById('pin-screen').classList.remove('hidden');if(typeof updateOctoLogo!=='undefined')updateOctoLogo();
+}
+function pinKey(d){if(pinBuf.length>=4)return;pinBuf+=d;upDots();if(pinBuf.length===4)setTimeout(procPin,150)}
+function pinDelete(){pinBuf=pinBuf.slice(0,-1);upDots();document.getElementById('pin-error').textContent=''}
+function upDots(s){for(let i=0;i<4;i++){const d=document.getElementById('dot-'+i);d.className='pin-dot';if(s==='error')d.classList.add('error');else if(i<pinBuf.length)d.classList.add('filled')}}
+function procPin(){
+  const e=pinBuf;pinBuf='';
+  if(pinMode==='setup'){pinNewTemp=e;pinMode='setup-confirm';document.getElementById('pin-subtitle').textContent='PIN best\u00e4tigen';document.getElementById('pin-setup-note').style.display='none';upDots();return}
+  if(pinMode==='setup-confirm'){if(e===pinNewTemp){localStorage.setItem(PIN_KEY,hashPin(e));sessionStorage.setItem('pin_ok','1');showToast('\u2705 PIN gespeichert');unlockApp()}else{pinNewTemp='';pinMode='setup';document.getElementById('pin-subtitle').textContent='PINs stimmen nicht \u2013 neu w\u00e4hlen';upDots('error');setTimeout(()=>upDots(),600)}return}
+  if(pinMode==='change-old'){if(hashPin(e)===localStorage.getItem(PIN_KEY)){pinMode='change-new';document.getElementById('pin-subtitle').textContent='Neuen PIN w\u00e4hlen';upDots()}else{document.getElementById('pin-error').textContent='Falscher PIN';upDots('error');setTimeout(()=>upDots(),600)}return}
+  if(pinMode==='change-new'){pinNewTemp=e;pinMode='change-confirm';document.getElementById('pin-subtitle').textContent='Neuen PIN best\u00e4tigen';upDots();return}
+  if(pinMode==='change-confirm'){if(e===pinNewTemp){localStorage.setItem(PIN_KEY,hashPin(e));sessionStorage.setItem('pin_ok','1');showToast('\u2705 PIN ge\u00e4ndert');document.getElementById('pin-screen').classList.add('hidden')}else{pinMode='change-new';document.getElementById('pin-subtitle').textContent='PINs stimmen nicht';upDots('error');setTimeout(()=>upDots(),600)}return}
+  if(hashPin(e)===localStorage.getItem(PIN_KEY)){sessionStorage.setItem('pin_ok','1');unlockApp()}
+  else{document.getElementById('pin-error').textContent='Falscher PIN';upDots('error');setTimeout(()=>upDots(),600)}
+}
+function unlockApp(){document.getElementById('pin-screen').classList.add('hidden');initApp()}
+function startPinChange(){pinBuf='';pinMode='change-old';document.getElementById('pin-subtitle').textContent='Aktuellen PIN eingeben';document.getElementById('pin-error').textContent='';upDots();document.getElementById('pin-screen').classList.remove('hidden')}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){window._bt=Date.now()}else{if(window._bt&&(Date.now()-window._bt)>5*60*1000){sessionStorage.removeItem('pin_ok');initPin()}window._bt=null}});
+
+// INIT
+function initApp(){
+  document.getElementById('growth-date').value=new Date().toISOString().slice(0,10);
+  updateGreeting();updateSleepUI();updateHomeStats();updateRecentLog();updateSinceFeed();updateWakeWindow();
+  setInterval(()=>{updateHomeStats();updateGreeting();updateSinceFeed();updateWakeWindow()},60000);
+  setInterval(()=>{updateWakeWindow();drawOctoRing()},30000);
+}
+initPin();
+</script>
+</body>
+</html>
