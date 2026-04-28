@@ -1,4 +1,4 @@
-# 🌙 BabySchlaf – Setup Anleitung
+# 🌙 BabySchlaf "OctoRest" – Setup Anleitung
 
 
 ## Als App auf dem Tablet installieren
